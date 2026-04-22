@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ section_name }} | Philippines Fintech Daily Brief</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+{% set icons = {
+    'regulation': '⚖️', 'credit_card': '💳', 'digital_lending': '🏦',
+    'cash_loan': '💰', 'bnpl': '🛒', 'digital_bank': '📱', 'akulaku': '🔍'
+} %}
+{% set colors = {
+    'regulation': 'background:#fef3c7;color:#92400e;',
+    'credit_card': 'background:#dbeafe;color:#1e40af;',
+    'digital_lending': 'background:#d1fae5;color:#065f46;',
+    'cash_loan': 'background:#fef3c7;color:#92400e;',
+    'bnpl': 'background:#ede9fe;color:#5b21b6;',
+    'digital_bank': 'background:#e0f2fe;color:#0c4a6e;',
+    'akulaku': 'background:#fce7f3;color:#9d174d;'
+} %}
+
+<div class="header">
+    <div class="header-inner">
+        <h1><a href="../index.html">Philippines <span>Fintech</span> Daily Brief</a></h1>
+        <div class="header-meta"><div class="date">{{ today_str }}</div><div>{{ vol }}</div></div>
+    </div>
+</div>
+<div class="nav-bar">
+    <div class="nav-bar-inner">
+        <a href="../index.html">首页</a>
+        <a href="yesterday.html">昨日汇总</a>
+        <a href="monthly.html">当月汇总</a>
+        <a href="akulaku.html" {% if section_key == 'akulaku' %}class="active"{% endif %}>Akulaku专题</a>
+        <a href="overview.html">市场概览</a>
+        <a href="regulation.html" {% if section_key == 'regulation' %}class="active"{% endif %}>监管动态</a>
+        <a href="credit-card.html" {% if section_key == 'credit_card' %}class="active"{% endif %}>信用卡</a>
+        <a href="digital-lending.html" {% if section_key == 'digital_lending' %}class="active"{% endif %}>数字信贷</a>
+        <a href="cash-loan.html" {% if section_key == 'cash_loan' %}class="active"{% endif %}>现金贷</a>
+        <a href="bnpl.html" {% if section_key == 'bnpl' %}class="active"{% endif %}>BNPL</a>
+        <a href="digital-bank.html" {% if section_key == 'digital_bank' %}class="active"{% endif %}>数字银行</a>
+        <a href="sources.html">信息源</a>
+        <a href="plan.html">更新计划</a>
+    </div>
+</div>
+
+<div class="page-title-bar">
+    <div class="page-title-bar-inner">
+        <div class="page-icon" style="{{ colors.get(section_key, '') }}">{{ icons.get(section_key, '📄') }}</div>
+        <div>
+            <div class="page-title">{{ section_name }}</div>
+            <div class="page-subtitle">共 {{ section_news | length }} 条 · 最近更新: {{ today_str }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="container {% if section_key == 'akulaku' %}akulaku-accent{% endif %}">
+
+    {% if key_points %}
+    <div class="key-points">
+        <div class="key-points-title">{{ key_points.title }}</div>
+        <ul>
+            {% for point in key_points.points %}
+            <li>{{ point }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if section_news %}
+    {% set current_date = {'val': ''} %}
+    {% for item in section_news %}
+        {% if item.published != current_date.val %}
+            {% if current_date.update({'val': item.published}) %}{% endif %}
+            <div class="date-divider">{{ item.published }}</div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-body">
+                {% for sec in item.sections %}
+                <span class="card-tag {{ section_tags.get(sec, 'tag-market') }}">{{ section_names.get(sec, sec) }}</span>
+                {% endfor %}
+                {% if item.is_major %}<span class="card-tag tag-breaking">重大</span>{% endif %}
+                <div class="card-title">
+                    <a href="{{ item.url }}" target="_blank">{{ item.title_zh or item.title }}</a>
+                </div>
+                <div class="card-summary">{{ item.summary_zh or item.summary }}</div>
+                <div class="card-meta">
+                    <span class="card-source">{{ item.source_zh or item.source }}</span>
+                    {% if item.published %}<span>{{ item.published }}</span>{% endif %}
+                    <a href="{{ item.url }}" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    {% else %}
+    <div class="card">
+        <div class="card-body" style="text-align:center; color:var(--gray-500); padding:2rem;">
+            暂无该板块的新闻。下次更新将自动填充。
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<div class="footer">
+    <p><strong>Philippines Fintech Daily Brief</strong> | {{ section_name }} | {{ today_str }}</p>
+</div>
+
+</body>
+</html>

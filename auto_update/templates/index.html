@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菲律宾金融科技日报 | Philippines Fintech Daily Brief</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header">
+    <div class="header-inner">
+        <h1><a href="index.html">Philippines <span>Fintech</span> Daily Brief</a></h1>
+        <div class="header-meta">
+            <div class="date">{{ today_str }} ({{ today_day }})</div>
+            <div>菲律宾金融科技日报 | {{ vol }}</div>
+        </div>
+    </div>
+</div>
+<div class="nav-bar">
+    <div class="nav-bar-inner">
+        <a href="index.html" class="active">首页</a>
+        <a href="pages/yesterday.html">昨日汇总</a>
+        <a href="pages/monthly.html">当月汇总</a>
+        <a href="pages/akulaku.html">Akulaku专题</a>
+        <a href="pages/overview.html">市场概览</a>
+        <a href="pages/regulation.html">监管动态</a>
+        <a href="pages/credit-card.html">信用卡</a>
+        <a href="pages/digital-lending.html">数字信贷</a>
+        <a href="pages/cash-loan.html">现金贷</a>
+        <a href="pages/bnpl.html">BNPL</a>
+        <a href="pages/digital-bank.html">数字银行</a>
+        <a href="pages/sources.html">信息源</a>
+        <a href="pages/plan.html">更新计划</a>
+    </div>
+</div>
+
+<div class="container">
+
+    {% if major_news %}
+    <div class="highlight-box">
+        <h3>{{ today_str }} | 今日核心看点</h3>
+        <ul style="list-style:none; padding:0; margin:0.5rem 0 0;">
+            {% for item in major_news[:5] %}
+            <li style="padding:0.3rem 0; font-size:0.88rem; color:#78350f;"><strong>{{ loop.index }}.</strong> <a href="{{ item.url }}" target="_blank" style="color:#78350f;">{{ item.title_zh or item.title }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <h2 style="font-size:1.1rem; color:var(--gray-700); margin-bottom:1rem;">板块导航</h2>
+
+    <div class="dash-grid">
+        <a class="dash-card" href="pages/yesterday.html" style="border-left:3px solid var(--warning);">
+            <div class="dash-card-icon">📰</div>
+            <div class="dash-card-title">昨日新闻汇总</div>
+            <div class="dash-card-desc">{{ yesterday_str }} 新闻摘要</div>
+            <div class="dash-card-count">{{ yesterday_news | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/monthly.html" style="border-left:3px solid var(--success);">
+            <div class="dash-card-icon">📅</div>
+            <div class="dash-card-title">当月新闻汇总</div>
+            <div class="dash-card-desc">{{ month_str }} 新闻时间线</div>
+            <div class="dash-card-count">{{ monthly_news | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/akulaku.html" style="border-left:3px solid #ec4899;">
+            <div class="dash-card-icon">🔍</div>
+            <div class="dash-card-title">Akulaku Cash Loan 专题</div>
+            <div class="dash-card-desc">产品信息、合规、用户评价、媒体报道</div>
+            <div class="dash-card-count">{{ sections.akulaku | length }} 条信息 →</div>
+        </a>
+        <a class="dash-card" href="pages/overview.html">
+            <div class="dash-card-icon">📊</div>
+            <div class="dash-card-title">市场概览</div>
+            <div class="dash-card-desc">菲律宾金融科技市场核心数据与趋势</div>
+        </a>
+        <a class="dash-card" href="pages/regulation.html">
+            <div class="dash-card-icon">⚖️</div>
+            <div class="dash-card-title">监管动态</div>
+            <div class="dash-card-desc">BSP & SEC 监管政策与法规变化</div>
+            <div class="dash-card-count">{{ sections.regulation | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/credit-card.html">
+            <div class="dash-card-icon">💳</div>
+            <div class="dash-card-title">信用卡市场</div>
+            <div class="dash-card-desc">信用卡产品与市场趋势</div>
+            <div class="dash-card-count">{{ sections.credit_card | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/digital-lending.html">
+            <div class="dash-card-icon">🏦</div>
+            <div class="dash-card-title">数字信贷</div>
+            <div class="dash-card-desc">数字贷款、MSME融资与科技信贷</div>
+            <div class="dash-card-count">{{ sections.digital_lending | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/cash-loan.html">
+            <div class="dash-card-icon">💰</div>
+            <div class="dash-card-title">现金贷</div>
+            <div class="dash-card-desc">现金贷产品、利率与趋势</div>
+            <div class="dash-card-count">{{ sections.cash_loan | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/bnpl.html">
+            <div class="dash-card-icon">🛒</div>
+            <div class="dash-card-title">BNPL 先买后付</div>
+            <div class="dash-card-desc">BNPL市场与头部玩家动态</div>
+            <div class="dash-card-count">{{ sections.bnpl | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/digital-bank.html">
+            <div class="dash-card-icon">📱</div>
+            <div class="dash-card-title">数字银行与支付</div>
+            <div class="dash-card-desc">数字银行、电子钱包与汇款</div>
+            <div class="dash-card-count">{{ sections.digital_bank | length }} 条新闻 →</div>
+        </a>
+        <a class="dash-card" href="pages/sources.html">
+            <div class="dash-card-icon">🌐</div>
+            <div class="dash-card-title">信息源与主流网站</div>
+            <div class="dash-card-desc">18个主要信息来源和监测网址</div>
+        </a>
+        <a class="dash-card" href="pages/plan.html">
+            <div class="dash-card-icon">📋</div>
+            <div class="dash-card-title">日更计划</div>
+            <div class="dash-card-desc">日更执行方案与推送计划</div>
+        </a>
+    </div>
+
+    {% if today_news %}
+    <h2 style="font-size:1.1rem; color:var(--gray-700); margin:1.5rem 0 1rem;">今日新增 ({{ today_str }})</h2>
+    {% for item in today_news[:10] %}
+    <div class="card">
+        <div class="card-body">
+            {% for sec in item.sections %}
+            <span class="card-tag {{ section_tags.get(sec, 'tag-market') }}">{{ section_names.get(sec, sec) }}</span>
+            {% endfor %}
+            {% if item.is_major %}<span class="card-tag tag-breaking">重大</span>{% endif %}
+            <div class="card-title">
+                <a href="{{ item.url }}" target="_blank">{{ item.title_zh or item.title }}</a>
+            </div>
+            <div class="card-summary">{{ item.summary_zh or item.summary }}</div>
+            <div class="card-meta">
+                <span class="card-source">{{ item.source_zh or item.source }}</span>
+                <a href="{{ item.url }}" class="card-link" target="_blank">查看原文 →</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+</div>
+
+<div class="footer">
+    <p><strong>Philippines Fintech Daily Brief</strong> | 菲律宾金融科技日报</p>
+    <p style="margin-top:0.3rem;">数据截至: {{ today_str }} | 自动更新</p>
+</div>
+
+</body>
+</html>

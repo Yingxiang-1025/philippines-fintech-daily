@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title | default("菲律宾金融科技日报") }} | Philippines Fintech Daily Brief</title>
+    <link rel="stylesheet" href="{{ css_path | default('../style.css') }}">
+</head>
+<body>
+
+<div class="header">
+    <div class="header-inner">
+        <h1><a href="{{ index_path | default('../index.html') }}">Philippines <span>Fintech</span> Daily Brief</a></h1>
+        <div class="header-meta">
+            <div class="date">{{ today_str }}</div>
+            <div>{{ vol }}</div>
+        </div>
+    </div>
+</div>
+<div class="nav-bar">
+    <div class="nav-bar-inner">
+        <a href="{{ index_path | default('../index.html') }}" {% if active_page == 'index' %}class="active"{% endif %}>首页</a>
+        <a href="{{ pages_prefix | default('') }}overview.html" {% if active_page == 'overview' %}class="active"{% endif %}>市场概览</a>
+        <a href="{{ pages_prefix | default('') }}akulaku.html" {% if active_page == 'akulaku' %}class="active"{% endif %}>Akulaku专题</a>
+        <a href="{{ pages_prefix | default('') }}regulation.html" {% if active_page == 'regulation' %}class="active"{% endif %}>监管动态</a>
+        <a href="{{ pages_prefix | default('') }}credit-card.html" {% if active_page == 'credit_card' %}class="active"{% endif %}>信用卡</a>
+        <a href="{{ pages_prefix | default('') }}digital-lending.html" {% if active_page == 'digital_lending' %}class="active"{% endif %}>数字信贷</a>
+        <a href="{{ pages_prefix | default('') }}cash-loan.html" {% if active_page == 'cash_loan' %}class="active"{% endif %}>现金贷</a>
+        <a href="{{ pages_prefix | default('') }}bnpl.html" {% if active_page == 'bnpl' %}class="active"{% endif %}>BNPL</a>
+        <a href="{{ pages_prefix | default('') }}digital-bank.html" {% if active_page == 'digital_bank' %}class="active"{% endif %}>数字银行</a>
+        <a href="{{ pages_prefix | default('') }}yesterday.html" {% if active_page == 'yesterday' %}class="active"{% endif %}>昨日汇总</a>
+        <a href="{{ pages_prefix | default('') }}monthly.html" {% if active_page == 'monthly' %}class="active"{% endif %}>当月汇总</a>
+        <a href="{{ pages_prefix | default('') }}sources.html" {% if active_page == 'sources' %}class="active"{% endif %}>信息源</a>
+        <a href="{{ pages_prefix | default('') }}plan.html" {% if active_page == 'plan' %}class="active"{% endif %}>更新计划</a>
+    </div>
+</div>
+
+{% block page_title_bar %}{% endblock %}
+
+<div class="container">
+{% block content %}{% endblock %}
+</div>
+
+<div class="footer">
+    <p><strong>Philippines Fintech Daily Brief</strong> | {{ footer_text | default("菲律宾金融科技日报") }}</p>
+    <p style="margin-top:0.2rem;">数据截至: {{ today_str }}</p>
+</div>
+
+</body>
+</html>

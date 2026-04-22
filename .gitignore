@@ -1,0 +1,7 @@
+auto_update/data/news.json
+auto_update/data/update.log
+auto_update/data/vol_counter.txt
+auto_update/__pycache__/
+__pycache__/
+*.pyc
+.env

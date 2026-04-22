@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菲律宾金融科技日报 | Philippines Fintech Daily Brief</title>
+    <style>
+        :root {
+            --primary: #1a56db;
+            --primary-light: #e8effc;
+            --accent: #dc2626;
+            --accent-light: #fef2f2;
+            --success: #059669;
+            --success-light: #ecfdf5;
+            --warning: #d97706;
+            --warning-light: #fffbeb;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #1a56db 50%, #2563eb 100%);
+            color: #fff;
+            padding: 2rem 1.5rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .header h1 span { color: #fbbf24; }
+        .header-meta {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-align: right;
+        }
+        .header-meta .date { font-weight: 600; font-size: 1rem; }
+
+        .nav-bar {
+            background: #fff;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0 1.5rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            position: sticky;
+            top: 88px;
+            z-index: 99;
+            box-shadow: var(--shadow);
+        }
+        .nav-bar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0;
+        }
+        .nav-bar a {
+            display: inline-block;
+            padding: 0.75rem 1.1rem;
+            color: var(--gray-500);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all .2s;
+        }
+        .nav-bar a:hover, .nav-bar a.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            scroll-margin-top: 140px;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .section-subtitle {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            font-weight: 400;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: box-shadow .2s;
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-body { padding: 1.2rem 1.4rem; }
+        .card-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-right: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
+        .tag-regulation { background: #fef3c7; color: #92400e; }
+        .tag-product { background: #dbeafe; color: #1e40af; }
+        .tag-market { background: #d1fae5; color: #065f46; }
+        .tag-funding { background: #ede9fe; color: #5b21b6; }
+        .tag-akulaku { background: #fce7f3; color: #9d174d; }
+        .tag-breaking { background: #fee2e2; color: #991b1b; }
+        .tag-data { background: #e0f2fe; color: #0c4a6e; }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0.4rem 0;
+            line-height: 1.4;
+        }
+        .card-title a { color: inherit; text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary {
+            font-size: 0.88rem;
+            color: var(--gray-700);
+            margin: 0.5rem 0;
+        }
+        .card-summary strong { color: var(--gray-900); }
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.7rem;
+            font-size: 0.78rem;
+            color: var(--gray-500);
+        }
+        .card-source { font-weight: 500; }
+        .card-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .card-link:hover { text-decoration: underline; }
+
+        .key-points {
+            background: var(--gray-50);
+            border-left: 3px solid var(--primary);
+            padding: 0.8rem 1rem;
+            margin: 0.8rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .key-points-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .key-points ul {
+            list-style: none;
+            padding: 0;
+        }
+        .key-points li {
+            font-size: 0.84rem;
+            color: var(--gray-700);
+            padding: 0.2rem 0;
+            padding-left: 1rem;
+            position: relative;
+        }
+        .key-points li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .sites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .site-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            box-shadow: var(--shadow);
+            transition: box-shadow .2s, transform .15s;
+        }
+        .site-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+        .site-card .site-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--gray-900);
+        }
+        .site-card .site-name a { color: var(--primary); text-decoration: none; }
+        .site-card .site-name a:hover { text-decoration: underline; }
+        .site-card .site-desc {
+            font-size: 0.82rem;
+            color: var(--gray-500);
+            margin-top: 0.3rem;
+        }
+        .site-card .site-cat {
+            display: inline-block;
+            font-size: 0.68rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.1rem 0.45rem;
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 1.2rem 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+        .highlight-box h3 {
+            color: #92400e;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .highlight-box p {
+            font-size: 0.88rem;
+            color: #78350f;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--gray-200);
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.2rem;
+        }
+
+        .akulaku-section .card {
+            border-left: 3px solid #ec4899;
+        }
+
+        .footer {
+            background: var(--gray-900);
+            color: var(--gray-300);
+            padding: 2rem 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .footer a { color: #93c5fd; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .footer-note {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .update-plan {
+            background: #fff;
+            border: 2px dashed var(--primary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .update-plan h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .update-plan table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        .update-plan th, .update-plan td {
+            padding: 0.5rem 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .update-plan th {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.2rem; }
+            .nav-bar a { padding: 0.6rem 0.8rem; font-size: 0.78rem; }
+            .sites-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<div class="header">
+    <div class="header-inner">
+        <h1>Philippines <span>Fintech</span> Daily Brief</h1>
+        <div class="header-meta">
+            <div class="date">2026-04-22 (Tue)</div>
+            <div>菲律宾金融科技日报 | Vol.001</div>
+            <div>覆盖期: 2026年3月 - 4月</div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== NAVIGATION ==================== -->
+<div class="nav-bar">
+    <div class="nav-bar-inner">
+        <a href="#overview" class="active">市场概览</a>
+        <a href="#regulation">监管动态</a>
+        <a href="#credit-card">信用卡</a>
+        <a href="#digital-lending">数字信贷</a>
+        <a href="#cash-loan">现金贷</a>
+        <a href="#bnpl">BNPL</a>
+        <a href="#digital-bank">数字银行</a>
+        <a href="#akulaku">Akulaku专题</a>
+        <a href="#sources">信息源</a>
+        <a href="#plan">更新计划</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ==================== MARKET OVERVIEW ==================== -->
+    <div class="section" id="overview">
+        <div class="section-header">
+            <div class="section-icon" style="background:#dbeafe;color:#1e40af;">📊</div>
+            <div>
+                <div class="section-title">市场概览 Market Overview</div>
+                <div class="section-subtitle">菲律宾金融科技市场核心数据 (2026年3-4月)</div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">$8.9B</div>
+                <div class="stat-label">2026年BNPL市场规模预估</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">70M+</div>
+                <div class="stat-label">电子钱包用户数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">PHP 3.4T</div>
+                <div class="stat-label">银行消费信贷总额 (YoY +21.2%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">6家</div>
+                <div class="stat-label">持牌数字银行数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">9M</div>
+                <div class="stat-label">GoTyme用户数 (2026.03)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$66.1M</div>
+                <div class="stat-label">消费信贷市场规模 (至2034)</div>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <h3>本期核心看点</h3>
+            <p>
+                <strong>1.</strong> SEC计划解除在线贷款平台注册禁令，推出按规模分级的资本要求新框架；
+                <strong>2.</strong> Mastercard与FinVolution联合发布Luvit Card数字信用卡，切入菲律宾下沉市场；
+                <strong>3.</strong> Grab在菲律宾独家推出Cash Loan微贷服务，以生活数据替代传统征信；
+                <strong>4.</strong> Salmon Group完成$1亿融资，加速数字银行与借贷业务扩展；
+                <strong>5.</strong> BSP加强农村银行数字化监管，限制30%客户地域分布红线。
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== REGULATION ==================== -->
+    <div class="section" id="regulation">
+        <div class="section-header">
+            <div class="section-icon" style="background:#fef3c7;color:#92400e;">⚖️</div>
+            <div>
+                <div class="section-title">监管动态 Regulatory Updates</div>
+                <div class="section-subtitle">BSP & SEC 最新监管政策与法规变化</div>
+            </div>
+        </div>
+
+        <div class="key-points">
+            <div class="key-points-title">板块要点提炼</div>
+            <ul>
+                <li>SEC拟解除2021年以来的在线贷款平台注册禁令(Moratorium)，引入分级资本要求</li>
+                <li>新框架要求融资公司最高P1亿资本金、贷款公司最高P5000万，现有公司3年过渡期</li>
+                <li>SEC提议将贷款公司监管权移交BSP，但立法机构和BSP态度谨慎</li>
+                <li>BSP推出30%客户地域限制规则，封堵农村银行牌照用于全国数字放贷的漏洞</li>
+                <li>月利率上限维持6%（P10,000以下贷款），禁止自动催收威胁和数据抓取</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-regulation">监管</span>
+                <span class="card-tag tag-breaking">重大</span>
+                <div class="card-title">
+                    <a href="https://newsbytes.ph/2026/03/14/sec-moves-to-lift-moratorium-on-online-lending-platforms/" target="_blank">
+                        SEC解除在线贷款平台注册禁令，发布新规草案
+                    </a>
+                </div>
+                <div class="card-summary">
+                    SEC发布草案拟解除自2021年以来的在线贷款平台(OLP)注册冻结，引入<strong>"按规模付费"(pay-to-scale)</strong>的分级资本要求框架。融资公司管理1-10个平台需P3000万-P1亿资本，贷款公司需P2000万-P5000万。新规同时禁止个人数据抓取、自动化催收威胁，并要求OLP加入征信系统(CIC)。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">NewsBytes Philippines</span>
+                    <span>2026年3月14日</span>
+                    <a href="https://newsbytes.ph/2026/03/14/sec-moves-to-lift-moratorium-on-online-lending-platforms/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-regulation">监管</span>
+                <div class="card-title">
+                    <a href="https://www.bworldonline.com/corporate/2026/04/06/740793/sec-move-to-end-freeze-on-new-online-lending-firms-draws-cautious-support/" target="_blank">
+                        解除禁令获行业谨慎支持，Tala、Global Dominion等表态
+                    </a>
+                </div>
+                <div class="card-summary">
+                    SEC解除在线贷款平台冻结的举措获得行业谨慎支持。<strong>Tala Philippines</strong>和<strong>Global Dominion</strong>表示更严格的资本要求有助于淘汰不良参与者，但强调需加强对催收机构的执法监督。公众意见征集于2026年3月25日截止。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">BusinessWorld</span>
+                    <span>2026年4月6日</span>
+                    <a href="https://www.bworldonline.com/corporate/2026/04/06/740793/sec-move-to-end-freeze-on-new-online-lending-firms-draws-cautious-support/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-regulation">监管</span>
+                <div class="card-title">
+                    <a href="https://www.philstar.com/business/2026/04/15/2520983/sec-seeks-transfer-lending-firms-oversight-bsp" target="_blank">
+                        SEC提议将贷款公司监管权移交BSP
+                    </a>
+                </div>
+                <div class="card-summary">
+                    SEC委员Rogelio Quevedo向国会提交立场文件，提议将融资和贷款公司的监管从SEC转移至BSP（菲律宾央行），称贷款领域的欺诈是"SEC最严重的难题之一"。不过他承认，<strong>立法者和BSP对该方案热情不高</strong>。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Philippine Star</span>
+                    <span>2026年4月15日</span>
+                    <a href="https://www.philstar.com/business/2026/04/15/2520983/sec-seeks-transfer-lending-firms-oversight-bsp" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-regulation">监管</span>
+                <div class="card-title">
+                    <a href="https://fintechnews.ph/70573/banking/bsp-tightens-regulations-capital-rules-digital-rural-banks-philippines/" target="_blank">
+                        BSP收紧农村银行数字化监管：30%客户地域红线
+                    </a>
+                </div>
+                <div class="card-summary">
+                    BSP推出新规，要求利用数字平台的农村银行确保不超过<strong>30%的客户位于其物理经营区域之外</strong>。此举旨在封堵金融科技公司通过收购农村银行牌照(资本仅需P5000万-P2亿)替代数字银行牌照(需P10亿)来开展全国数字信贷业务的监管漏洞。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Fintech News PH</span>
+                    <span>2026年3月</span>
+                    <a href="https://fintechnews.ph/70573/banking/bsp-tightens-regulations-capital-rules-digital-rural-banks-philippines/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CREDIT CARD ==================== -->
+    <div class="section" id="credit-card">
+        <div class="section-header">
+            <div class="section-icon" style="background:#dbeafe;color:#1e40af;">💳</div>
+            <div>
+                <div class="section-title">信用卡市场 Credit Card Market</div>
+                <div class="section-subtitle">信用卡产品、发卡量增长及市场趋势</div>
+            </div>
+        </div>
+
+        <div class="key-points">
+            <div class="key-points-title">板块要点提炼</div>
+            <ul>
+                <li>Mastercard联合FinVolution推出Luvit Card，AI审核、分钟级审批，瞄准信用卡渗透率低的下沉市场</li>
+                <li>RCBC信用卡应收贷款2025年同比增长32%，2026年目标双位数增长</li>
+                <li>BNPL(28.4M用户)正成为信用卡的主要替代产品，尤其在年轻消费群体</li>
+                <li>菲律宾信用卡普及率仍处低位，银行纷纷加大数字化获客力度</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-product">新产品</span>
+                <span class="card-tag tag-breaking">重大</span>
+                <div class="card-title">
+                    <a href="https://tribune.net.ph/2026/04/15/mastercard-finvolution-launch-luvit-card-to-expand-digital-credit-access" target="_blank">
+                        Mastercard与FinVolution联合推出Luvit Card数字信用卡
+                    </a>
+                </div>
+                <div class="card-summary">
+                    2026年4月，Mastercard与FinVolution Group联合推出<strong>Luvit Card</strong>——一款灵活的分期付款信用产品，提供虚拟和实体两种形态，通过Luvit App发行。产品利用FinVolution的<strong>AI专有审核系统</strong>，可在几分钟内完成审批，针对菲律宾信用良好但被传统银行忽略的人群。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Tribune</span>
+                    <span>2026年4月15日</span>
+                    <a href="https://tribune.net.ph/2026/04/15/mastercard-finvolution-launch-luvit-card-to-expand-digital-credit-access" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-market">市场</span>
+                <div class="card-title">
+                    <a href="https://www.bworldonline.com/banking-finance/2026/03/12/735645/rcbc-eyes-double-digit-card-loan-growth/" target="_blank">
+                        RCBC目标2026年信用卡贷款双位数增长
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Rizal Commercial Banking Corp. (RCBC) 2025年信用卡应收贷款同比增长<strong>32%</strong>，发卡量增长18%，目前流通卡片达<strong>150万张</strong>。信用卡贷款占其消费贷款组合近半，其中富裕客群贡献超过一半的交易额。2026年继续瞄准双位数增长。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">BusinessWorld</span>
+                    <span>2026年3月12日</span>
+                    <a href="https://www.bworldonline.com/banking-finance/2026/03/12/735645/rcbc-eyes-double-digit-card-loan-growth/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-data">数据</span>
+                <div class="card-title">
+                    <a href="https://www.philstar.com/business/2026/01/22/2502547/credit-card-use-philippines-still-low-despite-growth" target="_blank">
+                        菲律宾信用卡使用率仍处低位但保持增长
+                    </a>
+                </div>
+                <div class="card-summary">
+                    尽管菲律宾信用卡市场持续增长，整体信用卡渗透率仍远低于区域平均水平。AI驱动的替代征信评分和移动优先的借贷平台正在扩大金融包容性，BNPL产品（2024年底已达<strong>2840万用户</strong>）成为信用卡的强劲替代品。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Philippine Star</span>
+                    <span>2026年1月</span>
+                    <a href="https://www.philstar.com/business/2026/01/22/2502547/credit-card-use-philippines-still-low-despite-growth" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DIGITAL LENDING ==================== -->
+    <div class="section" id="digital-lending">
+        <div class="section-header">
+            <div class="section-icon" style="background:#d1fae5;color:#065f46;">🏦</div>
+            <div>
+                <div class="section-title">数字信贷 Digital Lending</div>
+                <div class="section-subtitle">数字贷款产品、MSME融资及科技信贷创新</div>
+            </div>
+        </div>
+
+        <div class="key-points">
+            <div class="key-points-title">板块要点提炼</div>
+            <ul>
+                <li>Maya Bank累计放贷超$10亿(PHP 390亿)，个人贷款最高PHP 25万</li>
+                <li>UnionBank推出SSS LoanLite，SSS活跃会员可通过手机申请PHP 1000-20000短期数字贷款</li>
+                <li>ADB向Fuse Financing提供$3000万贷款，聚焦农村和女性企业家MSME信贷</li>
+                <li>Salmon Group完成$1亿融资，大幅扩展数字银行和借贷业务</li>
+                <li>DTI推出PHP 40亿MSME商业贷款基金</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-funding">融资</span>
+                <span class="card-tag tag-breaking">重大</span>
+                <div class="card-title">
+                    <a href="https://qa.philstar.com/business/2026/04/21/2522349/salmon-raises-100-million-digital-banking-push" target="_blank">
+                        Salmon Group获$1亿融资，加速数字银行与借贷扩张
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Salmon Group成功完成<strong>1亿美元</strong>新一轮融资（$6000万股权 + $4000万债权），该轮融资获大幅超额认购，反映投资者对其增长策略的信心。资金将用于扩展菲律宾数字银行和借贷业务。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Philippine Star</span>
+                    <span>2026年4月21日</span>
+                    <a href="https://qa.philstar.com/business/2026/04/21/2522349/salmon-raises-100-million-digital-banking-push" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-product">新产品</span>
+                <div class="card-title">
+                    <a href="https://fintechnews.ph/70706/lending/unionbank-sss-loanlite-digital-lending-philippines/" target="_blank">
+                        UnionBank推出SSS LoanLite数字贷款
+                    </a>
+                </div>
+                <div class="card-summary">
+                    UnionBank推出SSS LoanLite计划，面向活跃SSS（社会保障系统）会员提供短期数字贷款，金额<strong>PHP 1,000至PHP 20,000</strong>，还款期15-90天，全程通过手机App完成申请。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Fintech News PH</span>
+                    <span>2026年3月</span>
+                    <a href="https://fintechnews.ph/70706/lending/unionbank-sss-loanlite-digital-lending-philippines/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-funding">融资</span>
+                <div class="card-title">
+                    <a href="https://fintechnews.ph/69970/lending/adb-us-30-million-loan-fuse-financing-support-philippines-msmes/" target="_blank">
+                        ADB向Fuse Financing提供$3000万贷款支持MSME
+                    </a>
+                </div>
+                <div class="card-summary">
+                    亚洲开发银行(ADB)与Fuse Financing Inc.签署<strong>3000万美元</strong>贷款协议，通过数字借贷平台扩大菲律宾MSME（中小微企业）的信贷准入，重点关注农村地区和女性企业家。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Fintech News PH</span>
+                    <span>2026年3月</span>
+                    <a href="https://fintechnews.ph/69970/lending/adb-us-30-million-loan-fuse-financing-support-philippines-msmes/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-market">市场</span>
+                <div class="card-title">
+                    <a href="https://fintechnews.ph/70823/lending/philippines-dti-php-4-billion-msmes-business-loan-fund/" target="_blank">
+                        DTI推出PHP 40亿MSME商业贷款基金
+                    </a>
+                </div>
+                <div class="card-summary">
+                    菲律宾贸工部(DTI)推出<strong>PHP 40亿</strong>商业贷款基金，专门为菲律宾中小微企业提供融资支持，旨在促进中小企业数字化转型和业务扩展。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Fintech News PH</span>
+                    <span>2026年4月</span>
+                    <a href="https://fintechnews.ph/70823/lending/philippines-dti-php-4-billion-msmes-business-loan-fund/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CASH LOAN ==================== -->
+    <div class="section" id="cash-loan">
+        <div class="section-header">
+            <div class="section-icon" style="background:#fef3c7;color:#92400e;">💰</div>
+            <div>
+                <div class="section-title">现金贷 Cash Loan</div>
+                <div class="section-subtitle">现金贷产品动态、利率比较及市场趋势</div>
+            </div>
+        </div>
+
+        <div class="key-points">
+            <div class="key-points-title">板块要点提炼</div>
+            <ul>
+                <li>Grab正式推出Cash Loan微贷产品，以打车/外卖等生活数据替代传统征信，最高PHP 5万</li>
+                <li>Home Credit继续提供PHP 3000-15万现金贷，是市场重要参与者</li>
+                <li>Maya Easy Credit (最高PHP 3万) 和 Maya Personal Loan (最高PHP 25万) 覆盖不同信贷需求</li>
+                <li>SEC限制小额贷款月利率上限6%（P10,000以下），加强消费者保护</li>
+                <li>数字平台正通过替代数据(alternative data)和AI信用评分降低风控门槛</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-product">新产品</span>
+                <span class="card-tag tag-breaking">重大</span>
+                <div class="card-title">
+                    <a href="https://www.revu.com.ph/2026/04/how-to-apply-grab-cash-loan-philippines/" target="_blank">
+                        Grab推出Cash Loan微贷：以生活数据替代传统征信
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Grab在菲律宾独家推出<strong>Cash Loan</strong>微贷产品（后续将扩展至泰国和马来西亚），最高可借<strong>₱50,000</strong>，月利率<strong>2.99%</strong>起，最长3个月还款。创新点在于利用用户的打车频次、GrabFood订单、账户历史等<strong>数字生活数据</strong>替代传统征信来判定信用资格。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">REVU Philippines</span>
+                    <span>2026年4月</span>
+                    <a href="https://www.revu.com.ph/2026/04/how-to-apply-grab-cash-loan-philippines/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-product">产品</span>
+                <div class="card-title">
+                    <a href="https://moneysense.ph/lending-companies/home-credit-philippines/130668/home-credit-cash-loan-2026-monthly-due-borrow-p35k/" target="_blank">
+                        Home Credit 2026年现金贷：借款P35K月供详解
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Home Credit继续提供<strong>PHP 3,000至PHP 150,000</strong>的灵活现金贷款，提供多种月供分期选项和手续费方案。借款P35,000的月供计划已更新至2026年最新条款。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">MoneySense</span>
+                    <span>2026年4月</span>
+                    <a href="https://moneysense.ph/lending-companies/home-credit-philippines/130668/home-credit-cash-loan-2026-monthly-due-borrow-p35k/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-market">市场</span>
+                <div class="card-title">
+                    <a href="https://www.maya.ph/stories/how-digital-banks-open-access-to-credit-to-traditionally-underserved-borrowers-in-the-philippines" target="_blank">
+                        Maya Bank信贷产品矩阵：Easy Credit + Personal Loan双线覆盖
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Maya Bank为菲律宾信贷不足的借款人提供多层级信贷方案：<strong>Maya Easy Credit</strong>（最高PHP 30,000）适合小额短期需求，<strong>Maya Personal Loan</strong>（最高PHP 250,000）满足大额融资需求，申请流程简化、即时审批，累计放贷已超过<strong>PHP 390亿（约$6.64亿）</strong>。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Maya Bank</span>
+                    <span>2026年</span>
+                    <a href="https://www.maya.ph/stories/how-digital-banks-open-access-to-credit-to-traditionally-underserved-borrowers-in-the-philippines" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== BNPL ==================== -->
+    <div class="section" id="bnpl">
+        <div class="section-header">
+            <div class="section-icon" style="background:#ede9fe;color:#5b21b6;">🛒</div>
+            <div>
+                <div class="section-title">先买后付 BNPL (Buy Now Pay Later)</div>
+                <div class="section-subtitle">BNPL市场规模、头部玩家及竞争格局</div>
+            </div>
+        </div>
+
+        <div class="key-points">
+            <div class="key-points-title">板块要点提炼</div>
+            <ul>
+                <li>菲律宾BNPL市场2026年预计达$89亿，2031年将增至$188亿(CAGR 16.1%)</li>
+                <li>三大头部平台：BillEase (Pay with Grace 0%利息)、Atome (获Sensor Tower最佳BNPL奖)、Akulaku</li>
+                <li>BNPL已成为Z世代和千禧一代首选支付方式，2024年底用户达2840万</li>
+                <li>BNPL正从电商场景向线下零售、医疗、教育等垂直领域渗透</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-data">数据</span>
+                <span class="card-tag tag-market">市场</span>
+                <div class="card-title">
+                    <a href="https://uk.finance.yahoo.com/news/philippines-buy-now-pay-later-094000363.html" target="_blank">
+                        菲律宾BNPL市场报告：2026年$89亿，2031年翻倍至$188亿
+                    </a>
+                </div>
+                <div class="card-summary">
+                    菲律宾BNPL市场从2022-2025年实现<strong>CAGR 25.9%</strong>的高速增长。2026年市场规模预计达<strong>$89亿</strong>，预计2031年将增长至<strong>$188.1亿</strong>(CAGR 16.1%)。主要参与者包括PayMaya、GrabPay Later、TendoPay、<strong>Akulaku</strong>和BillEase。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Yahoo Finance</span>
+                    <span>2026年</span>
+                    <a href="https://uk.finance.yahoo.com/news/philippines-buy-now-pay-later-094000363.html" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-market">市场</span>
+                <div class="card-title">
+                    <a href="https://fintechnews.ph/top-bnpl-philippines/" target="_blank">
+                        菲律宾Top 3 BNPL平台及2026年市场前景
+                    </a>
+                </div>
+                <div class="card-summary">
+                    <strong>BillEase</strong>以"Pay with Grace"（3-6个月0%利息免息期）领跑，月利率3.49%。<strong>Atome</strong>提供40天0%利息、最高₱20万额度的Atome Card，获2025年Sensor Tower APAC最受欢迎BNPL奖。年轻消费者推动BNPL成为信用卡的主流替代方案。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Fintech News PH</span>
+                    <span>2026年</span>
+                    <a href="https://fintechnews.ph/top-bnpl-philippines/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-market">趋势</span>
+                <div class="card-title">
+                    <a href="https://blog.billease.ph/2026/01/29/why-bnpl-is-becoming-the-default-payment-method-for-filipinos/" target="_blank">
+                        为什么BNPL正成为菲律宾人的默认支付方式
+                    </a>
+                </div>
+                <div class="card-summary">
+                    BillEase博客分析BNPL崛起趋势：年轻消费者（Gen Z和千禧一代）偏好灵活、无卡支付，BNPL提供的<strong>现金流控制、可预测还款</strong>和低于信用卡利息的优势使其快速普及，正从电商向更多消费场景渗透。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">BillEase Blog</span>
+                    <span>2026年1月</span>
+                    <a href="https://blog.billease.ph/2026/01/29/why-bnpl-is-becoming-the-default-payment-method-for-filipinos/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DIGITAL BANK ==================== -->
+    <div class="section" id="digital-bank">
+        <div class="section-header">
+            <div class="section-icon" style="background:#e0f2fe;color:#0c4a6e;">📱</div>
+            <div>
+                <div class="section-title">数字银行与支付 Digital Banking & Payments</div>
+                <div class="section-subtitle">数字银行发展、电子钱包及跨境汇款</div>
+            </div>
+        </div>
+
+        <div class="key-points">
+            <div class="key-points-title">板块要点提炼</div>
+            <ul>
+                <li>GoTyme Bank达900万用户(2026年3月)，目标年中破千万，2027年中盈利</li>
+                <li>GCash推出AI金融教练"Pera Coach"（支持4种语言），联手Microsoft助力金融素养</li>
+                <li>GCash与du Pay合作实现UAE-菲律宾即时汇款，Maya推出中东汇款手续费优惠</li>
+                <li>菲律宾Fintech基础设施仍薄弱：数字钱包交易费P10-50/笔，远高于印度和巴西的近零费率</li>
+                <li>6家持牌数字银行运营中，BSP允许最多10家，新申请者或将进入</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-market">增长</span>
+                <div class="card-title">
+                    <a href="https://business.inquirer.net/580999/gotyme-hits-9m-users-as-of-march-2026-profitability-still-on-track" target="_blank">
+                        GoTyme Bank达900万用户，盈利计划不变
+                    </a>
+                </div>
+                <div class="card-summary">
+                    GoTyme Bank截至2026年3月达<strong>900万用户</strong>，CEO Nathaniel Clarke预计年中达1000万、年底接近1200万。银行正优先获客和产品扩展，<strong>盈利预计2027年中</strong>实现。提供"买一送一"转账模式(P8/笔)、BNPL和加密货币服务。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Inquirer</span>
+                    <span>2026年3月</span>
+                    <a href="https://business.inquirer.net/580999/gotyme-hits-9m-users-as-of-march-2026-profitability-still-on-track" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-product">新功能</span>
+                <div class="card-title">
+                    <a href="http://www.boyraket.com/2026/03/gcashlaunches-peracoach-philippines.html" target="_blank">
+                        GCash推出菲律宾首个AI金融教练"Pera Coach"
+                    </a>
+                </div>
+                <div class="card-summary">
+                    GCash与Microsoft合作推出<strong>"Pera Coach"</strong>——菲律宾首个嵌入电子钱包的AI金融教练，支持<strong>英语、他加禄语、宿务语和希利盖农语</strong>四种语言，提供个性化的预算、储蓄和投资指导，旨在提升菲律宾人的金融素养水平。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">BoyRaket</span>
+                    <span>2026年3月</span>
+                    <a href="http://www.boyraket.com/2026/03/gcashlaunches-peracoach-philippines.html" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-product">合作</span>
+                <div class="card-title">
+                    <a href="https://fintechnews.ph/70747/remittance/maya-transaction-rebates-middle-east-remittances/" target="_blank">
+                        Maya推出中东汇款手续费优惠活动
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Maya于2026年3月23日至4月10日推出中东汇款返利活动，覆盖巴林、科威特、阿曼、卡塔尔、沙特、UAE等地区。优惠包括<strong>PHP 18 ATM取款返利、PHP 15 InstaPay返利</strong>以及1-3%话费充值返现。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Fintech News PH</span>
+                    <span>2026年3月</span>
+                    <a href="https://fintechnews.ph/70747/remittance/maya-transaction-rebates-middle-east-remittances/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-data">洞察</span>
+                <div class="card-title">
+                    <a href="https://www.philstar.com/business/2026/04/15/2520979/philippines-fintech-infrastructure-still-weak-despite-widespread-usage" target="_blank">
+                        菲律宾Fintech基础设施薄弱：交易费远高于新兴市场同行
+                    </a>
+                </div>
+                <div class="card-summary">
+                    尽管电子钱包用户超7000万，菲律宾的Fintech基础设施仍面临挑战。数字钱包交易费<strong>P10-50/笔</strong>，远高于印度和巴西的近零费率，导致用户月均仅使用3次。高昂的交易成本限制了数字支付的深度普及。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Philippine Star</span>
+                    <span>2026年4月15日</span>
+                    <a href="https://www.philstar.com/business/2026/04/15/2520979/philippines-fintech-infrastructure-still-weak-despite-widespread-usage" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== AKULAKU ==================== -->
+    <div class="section akulaku-section" id="akulaku">
+        <div class="section-header">
+            <div class="section-icon" style="background:#fce7f3;color:#9d174d;">🔍</div>
+            <div>
+                <div class="section-title">Akulaku Cash Loan 专题</div>
+                <div class="section-subtitle">Akulaku现金贷产品信息、监管合规及媒体报道追踪</div>
+            </div>
+        </div>
+
+        <div class="key-points">
+            <div class="key-points-title">板块要点提炼</div>
+            <ul>
+                <li>Akulaku以"Streetcorner Lending Corp."名义在SEC注册(No. CS201606603)，持有经营许可证No.1830</li>
+                <li>现金贷产品: ₱2,000-₱60,000，期限91-180天，年利率12%-17%，最高APR 30%</li>
+                <li>App Store评分偏低（Cash Loan App 2.1/5，PayLater App 1.9/5），主要投诉集中在支付处理和系统问题</li>
+                <li>被列入SEC 2026年1月更新的注册OLP名单，合规运营</li>
+                <li>同时作为菲律宾BNPL市场的主要参与者被Yahoo Finance等媒体提及</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-akulaku">Akulaku</span>
+                <span class="card-tag tag-regulation">合规</span>
+                <div class="card-title">
+                    <a href="https://ploan.ph/register/1830/" target="_blank">
+                        Akulaku (Streetcorner Lending Corp.) 2026合规信息
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Akulaku在菲律宾以<strong>Streetcorner Lending Corp.</strong>名义运营，持有SEC注册号CS201606603和经营许可证No.1830。年利率范围<strong>12%-17%</strong>。受《贷款公司监管法》(RA 9474)和《融资公司法》(RA 8556)监管。SEC确认其在2026年1月26日更新的注册OLP名单中，符合SEC Memorandum Circular No.19 (2019)要求。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">PLoan.ph / SEC</span>
+                    <span>2026年</span>
+                    <a href="https://ploan.ph/register/1830/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-akulaku">Akulaku</span>
+                <span class="card-tag tag-product">产品</span>
+                <div class="card-title">
+                    <a href="https://www.n90.asia/post/applying-for-akulaku-cash-loans-in-the-philippines" target="_blank">
+                        Akulaku现金贷产品详解与申请流程
+                    </a>
+                </div>
+                <div class="card-summary">
+                    <strong>贷款额度：</strong>₱2,000至₱60,000<br>
+                    <strong>贷款期限：</strong>14天至6个月(最长180天)<br>
+                    <strong>利率：</strong>最高APR 30%，0%交易和服务费<br>
+                    <strong>申请资格：</strong>18岁以上菲律宾公民，持有效政府ID<br>
+                    <strong>审批时效：</strong>5分钟在线申请，24小时内放款<br>
+                    <strong>提现方式：</strong>支持GCash、Maya、BPI等电子钱包和银行账户
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">N90 Asia</span>
+                    <span>持续更新</span>
+                    <a href="https://www.n90.asia/post/applying-for-akulaku-cash-loans-in-the-philippines" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-akulaku">Akulaku</span>
+                <span class="card-tag tag-data">评价</span>
+                <div class="card-title">
+                    <a href="https://loanexpert.ph/akulaku/" target="_blank">
+                        Akulaku用户评价与体验分析
+                    </a>
+                </div>
+                <div class="card-summary">
+                    根据App Store数据，Akulaku Cash Loan App评分<strong>2.1/5</strong>(58条评价)，PayLater App评分<strong>1.9/5</strong>(43条评价)。用户投诉主要集中在：支付处理失败、系统错误、登录/账户恢复困难等技术问题。建议关注用户体验改善和技术稳定性提升。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">LoanExpert.ph / App Store</span>
+                    <span>2026年</span>
+                    <a href="https://loanexpert.ph/akulaku/" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <span class="card-tag tag-akulaku">Akulaku</span>
+                <span class="card-tag tag-market">BNPL</span>
+                <div class="card-title">
+                    <a href="https://uk.finance.yahoo.com/news/philippines-buy-now-pay-later-094000363.html" target="_blank">
+                        Akulaku在菲律宾BNPL市场中的定位
+                    </a>
+                </div>
+                <div class="card-summary">
+                    Yahoo Finance市场报告将<strong>Akulaku</strong>列为菲律宾BNPL市场的主要参与者之一，与PayMaya、GrabPay Later、TendoPay、BillEase并列。该市场从2022至2025年CAGR达25.9%，预计2026-2031年维持16.1%增速至$188亿规模。Akulaku在BNPL和现金贷两个领域均有布局。
+                </div>
+                <div class="card-meta">
+                    <span class="card-source">Yahoo Finance</span>
+                    <span>2026年</span>
+                    <a href="https://uk.finance.yahoo.com/news/philippines-buy-now-pay-later-094000363.html" class="card-link" target="_blank">查看原文 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SOURCE SITES ==================== -->
+    <div class="section" id="sources">
+        <div class="section-header">
+            <div class="section-icon" style="background:#f3f4f6;color:#374151;">🌐</div>
+            <div>
+                <div class="section-title">信息源与主流网站 Source Websites</div>
+                <div class="section-subtitle">菲律宾金融科技领域主要信息来源和监测网址</div>
+            </div>
+        </div>
+
+        <h3 style="font-size:0.95rem; color:var(--gray-700); margin: 1rem 0 0.8rem;">金融科技专业媒体</h3>
+        <div class="sites-grid">
+            <div class="site-card">
+                <div class="site-name"><a href="https://fintechnews.ph/" target="_blank">Fintech News Philippines</a></div>
+                <div class="site-desc">菲律宾领先的金融科技新闻门户，隶属Fintech News Network，覆盖借贷、支付、数字银行等领域</div>
+                <div class="site-cat">金融科技</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.fintechnewsph.com/" target="_blank">FintechNewsPh</a></div>
+                <div class="site-desc">菲律宾金融科技资讯网站，覆盖银行、支付、网络安全、加密货币等话题</div>
+                <div class="site-cat">金融科技</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://bankero.com.ph/" target="_blank">Bankero</a></div>
+                <div class="site-desc">菲律宾金融与银行业新闻平台，关注Fintech Alliance PH相关动态</div>
+                <div class="site-cat">银行/金融</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://thedigitalbanker.com/" target="_blank">The Digital Banker</a></div>
+                <div class="site-desc">亚太数字银行业媒体，覆盖菲律宾数字银行、支付和合作动态</div>
+                <div class="site-cat">数字银行</div>
+            </div>
+        </div>
+
+        <h3 style="font-size:0.95rem; color:var(--gray-700); margin: 1.5rem 0 0.8rem;">主流财经媒体</h3>
+        <div class="sites-grid">
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.bworldonline.com/" target="_blank">BusinessWorld</a></div>
+                <div class="site-desc">菲律宾领先的商业日报，深度覆盖银行、金融、信贷等领域政策与市场</div>
+                <div class="site-cat">财经日报</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://business.inquirer.net/" target="_blank">Inquirer Business</a></div>
+                <div class="site-desc">Inquirer商业版块，菲律宾最具影响力的综合新闻媒体之一</div>
+                <div class="site-cat">综合财经</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.philstar.com/business" target="_blank">PhilStar Business</a></div>
+                <div class="site-desc">Philippine Star商业版，覆盖银行、Fintech、监管政策等财经新闻</div>
+                <div class="site-cat">综合财经</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://tribune.net.ph/" target="_blank">Tribune</a></div>
+                <div class="site-desc">菲律宾日报，关注金融产品发布、科技创新等商业新闻</div>
+                <div class="site-cat">综合媒体</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.manilatimes.net/" target="_blank">Manila Times</a></div>
+                <div class="site-desc">菲律宾历史最悠久的英文报纸，企业新闻和金融分析</div>
+                <div class="site-cat">综合媒体</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.gmanetwork.com/news/money/" target="_blank">GMA Money</a></div>
+                <div class="site-desc">GMA网络财经频道，覆盖公司新闻、市场动态和个人理财</div>
+                <div class="site-cat">财经频道</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://newsbytes.ph/" target="_blank">NewsBytes Philippines</a></div>
+                <div class="site-desc">菲律宾新闻网站，关注SEC和BSP监管政策、科技金融动态</div>
+                <div class="site-cat">综合媒体</div>
+            </div>
+        </div>
+
+        <h3 style="font-size:0.95rem; color:var(--gray-700); margin: 1.5rem 0 0.8rem;">消费金融与贷款比较</h3>
+        <div class="sites-grid">
+            <div class="site-card">
+                <div class="site-name"><a href="https://moneysense.ph/" target="_blank">MoneySense</a></div>
+                <div class="site-desc">菲律宾个人理财门户，详细的现金贷、信用卡产品比较和月供计算</div>
+                <div class="site-cat">个人理财</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.moneysmart.ph/" target="_blank">MoneySmart Philippines</a></div>
+                <div class="site-desc">金融产品比较平台，BNPL、信用卡、贷款等消费金融产品评测</div>
+                <div class="site-cat">产品比较</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.revu.com.ph/" target="_blank">REVU Philippines</a></div>
+                <div class="site-desc">科技和金融产品评测网站，现金贷申请指南和产品详解</div>
+                <div class="site-cat">产品评测</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://loanexpert.ph/" target="_blank">LoanExpert.ph</a></div>
+                <div class="site-desc">菲律宾贷款比较和评价平台，包含Akulaku等主要贷款App的用户评价</div>
+                <div class="site-cat">贷款比较</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://ploan.ph/" target="_blank">PLoan.ph</a></div>
+                <div class="site-desc">菲律宾贷款公司注册信息查询平台，SEC合规状态验证</div>
+                <div class="site-cat">合规查询</div>
+            </div>
+        </div>
+
+        <h3 style="font-size:0.95rem; color:var(--gray-700); margin: 1.5rem 0 0.8rem;">监管机构官网</h3>
+        <div class="sites-grid">
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.bsp.gov.ph/" target="_blank">BSP (Bangko Sentral ng Pilipinas)</a></div>
+                <div class="site-desc">菲律宾中央银行，数字银行牌照、货币政策、银行监管</div>
+                <div class="site-cat">央行/监管</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.sec.gov.ph/" target="_blank">SEC Philippines</a></div>
+                <div class="site-desc">菲律宾证券交易委员会，贷款公司注册、OLP监管、投资者保护</div>
+                <div class="site-cat">证监/监管</div>
+            </div>
+            <div class="site-card">
+                <div class="site-name"><a href="https://www.respicio.ph/commentaries" target="_blank">Respicio & Co. Law</a></div>
+                <div class="site-desc">菲律宾法律评论网站，在线贷款监管法规解读和合规分析</div>
+                <div class="site-cat">法律分析</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== UPDATE PLAN ==================== -->
+    <div class="section" id="plan">
+        <div class="section-header">
+            <div class="section-icon" style="background:#e0f2fe;color:#0c4a6e;">📋</div>
+            <div>
+                <div class="section-title">日更计划 Daily Update Plan</div>
+                <div class="section-subtitle">后续按日更新与推送的结构化计划</div>
+            </div>
+        </div>
+
+        <div class="update-plan">
+            <h3>更新频率与内容规划</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>板块</th>
+                        <th>更新频率</th>
+                        <th>信息源</th>
+                        <th>关注维度</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>监管动态</strong></td>
+                        <td>实时/日更</td>
+                        <td>SEC, BSP, PhilStar, BusinessWorld, Inquirer</td>
+                        <td>新法规草案、执行令、处罚公告、政策解读</td>
+                    </tr>
+                    <tr>
+                        <td><strong>信用卡市场</strong></td>
+                        <td>周更/重大事件日更</td>
+                        <td>BusinessWorld, GMA, 各银行官网</td>
+                        <td>新产品发布、发卡量数据、利率变动、合作公告</td>
+                    </tr>
+                    <tr>
+                        <td><strong>数字信贷</strong></td>
+                        <td>日更</td>
+                        <td>Fintech News PH, Tribune, Inquirer</td>
+                        <td>新贷款产品、利率调整、放贷数据、MSME融资动态</td>
+                    </tr>
+                    <tr>
+                        <td><strong>现金贷</strong></td>
+                        <td>日更</td>
+                        <td>MoneySense, REVU, LoanExpert, 各平台App</td>
+                        <td>产品更新、利率变化、新平台上线、用户体验</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BNPL</strong></td>
+                        <td>周更/重大事件日更</td>
+                        <td>Yahoo Finance, Fintech News PH, BillEase Blog</td>
+                        <td>市场数据、新玩家、合作商户扩展、政策影响</td>
+                    </tr>
+                    <tr>
+                        <td><strong>数字银行</strong></td>
+                        <td>日更</td>
+                        <td>Inquirer, Manila Times, Fintech News PH</td>
+                        <td>用户增长、新功能、融资动态、牌照审批</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Akulaku专题</strong></td>
+                        <td>日更</td>
+                        <td>SEC, PLoan.ph, LoanExpert, App Store, 媒体</td>
+                        <td>产品更新、合规状态、用户反馈、竞品对比、媒体报道</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="update-plan" style="border-color: var(--success);">
+            <h3 style="color: var(--success);">推送与日更执行方案</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>环节</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>页面结构</strong></td>
+                        <td>保持当前7大板块不变，每日在各板块顶部插入当日新条目，历史条目下沉并折叠</td>
+                    </tr>
+                    <tr>
+                        <td><strong>日期标记</strong></td>
+                        <td>每条新闻增加日期标签，Header区显示最新更新日期和版号(Vol.xxx)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>重点标记</strong></td>
+                        <td>当日最重要的3条以"重大"标签高亮，置于页面顶部"今日看点"区域</td>
+                    </tr>
+                    <tr>
+                        <td><strong>每日监测</strong></td>
+                        <td>每日检查信息源列表中各网站的最新内容，提取金融/科技金融相关新闻</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Akulaku追踪</strong></td>
+                        <td>每日搜索"Akulaku cash loan"关键词，监测产品变化、媒体报道和用户评价</td>
+                    </tr>
+                    <tr>
+                        <td><strong>竞品追踪</strong></td>
+                        <td>同步监测Home Credit、Grab Cash Loan、Maya、BillEase等主要竞品动态</td>
+                    </tr>
+                    <tr>
+                        <td><strong>数据看板</strong></td>
+                        <td>每周更新市场概览板块的核心数据指标（用户数、市场规模、利率等）</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+    <div class="footer-note">
+        <p><strong>Philippines Fintech Daily Brief</strong> | 菲律宾金融科技日报</p>
+        <p style="margin-top:0.5rem;">本报告信息来源于公开媒体报道和官方公告，仅供参考，不构成投资建议。</p>
+        <p style="margin-top:0.3rem;">数据截至: 2026年4月22日 | 下次更新: 2026年4月23日</p>
+        <p style="margin-top:0.5rem;">
+            主要信息源:
+            <a href="https://fintechnews.ph/">Fintech News PH</a> ·
+            <a href="https://www.bworldonline.com/">BusinessWorld</a> ·
+            <a href="https://business.inquirer.net/">Inquirer</a> ·
+            <a href="https://www.philstar.com/business">PhilStar</a> ·
+            <a href="https://tribune.net.ph/">Tribune</a> ·
+            <a href="https://www.sec.gov.ph/">SEC</a> ·
+            <a href="https://www.bsp.gov.ph/">BSP</a>
+        </p>
+    </div>
+</div>
+
+</body>
+</html>
