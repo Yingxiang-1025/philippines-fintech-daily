@@ -55,7 +55,7 @@ def run_update(dry_run: bool = False):
     logger.info(f"Existing news items: {len(existing)}")
 
     # 2. Fetch new articles
-    rss_items = fetch_rss_feeds(max_age_days=2)
+    rss_items = fetch_rss_feeds(max_age_days=7)
     search_items = search_web()
     all_new = rss_items + search_items
     logger.info(f"Fetched {len(all_new)} new articles (RSS: {len(rss_items)}, Search: {len(search_items)})")
@@ -72,8 +72,14 @@ def run_update(dry_run: bool = False):
     processed = process_news(unique_new)
     logger.info(f"Processed {len(processed)} articles")
 
-    # 5. Merge with existing
+    # 5. Merge with existing — stamp fetched_date on new items
+    today_stamp = datetime.now().strftime("%Y-%m-%d")
     new_dicts = [item.to_dict() for item in processed]
+    for nd in new_dicts:
+        nd["fetched_date"] = today_stamp
+    for ex in existing:
+        if "fetched_date" not in ex:
+            ex["fetched_date"] = ex.get("published", today_stamp)
     all_news = new_dicts + existing
 
     # Keep only last 90 days of news

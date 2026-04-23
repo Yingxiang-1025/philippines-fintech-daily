@@ -55,18 +55,20 @@
     </div>
 
     {% for item in yesterday_news %}
-    <div class="card">
+    <div class="card{% if item.fetched_date == today_str %} card-new{% endif %}">
         <div class="card-body">
             {% for sec in item.sections %}
             <span class="card-tag {{ section_tags.get(sec, 'tag-market') }}">{{ section_names.get(sec, sec) }}</span>
             {% endfor %}
             {% if item.is_major %}<span class="card-tag tag-breaking">重大</span>{% endif %}
+            {% if item.fetched_date == today_str %}<span class="card-tag tag-new">今日新增</span>{% endif %}
             <div class="card-title">
                 <a href="{{ item.url }}" target="_blank">{{ item.title_zh or item.title }}</a>
             </div>
             <div class="card-summary">{{ item.summary_zh or item.summary }}</div>
             <div class="card-meta">
                 <span class="card-source">{{ item.source_zh or item.source }}</span>
+                {% if item.published %}<span>{{ item.published }}</span>{% endif %}
                 <a href="{{ item.url }}" class="card-link" target="_blank">查看原文 →</a>
             </div>
         </div>
@@ -76,9 +78,34 @@
     {% else %}
     <div class="card">
         <div class="card-body" style="text-align:center; color:var(--gray-500); padding:2rem;">
-            {{ yesterday_str }} 暂无新的金融科技新闻。
+            {{ yesterday_str }} 暂无新增新闻。每日定时更新后将自动填充。
         </div>
     </div>
+
+    {% set recent = all_news | sort(attribute='published', reverse=True) %}
+    {% if recent %}
+    <h3 style="font-size:1rem; color:var(--gray-600); margin:1.5rem 0 0.8rem;">最近几日新闻</h3>
+    {% for item in recent[:5] %}
+    <div class="card{% if item.fetched_date == today_str %} card-new{% endif %}">
+        <div class="card-body">
+            {% for sec in item.sections %}
+            <span class="card-tag {{ section_tags.get(sec, 'tag-market') }}">{{ section_names.get(sec, sec) }}</span>
+            {% endfor %}
+            {% if item.fetched_date == today_str %}<span class="card-tag tag-new">今日新增</span>{% endif %}
+            <div class="card-title">
+                <a href="{{ item.url }}" target="_blank">{{ item.title_zh or item.title }}</a>
+            </div>
+            <div class="card-summary">{{ item.summary_zh or item.summary }}</div>
+            <div class="card-meta">
+                <span class="card-source">{{ item.source_zh or item.source }}</span>
+                {% if item.published %}<span>{{ item.published }}</span>{% endif %}
+                <a href="{{ item.url }}" class="card-link" target="_blank">查看原文 →</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
     {% endif %}
 
 </div>

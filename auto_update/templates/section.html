@@ -77,12 +77,13 @@
             <div class="date-divider">{{ item.published }}</div>
         {% endif %}
 
-        <div class="card">
+        <div class="card{% if item.fetched_date == today_str %} card-new{% endif %}">
             <div class="card-body">
                 {% for sec in item.sections %}
                 <span class="card-tag {{ section_tags.get(sec, 'tag-market') }}">{{ section_names.get(sec, sec) }}</span>
                 {% endfor %}
                 {% if item.is_major %}<span class="card-tag tag-breaking">重大</span>{% endif %}
+                {% if item.fetched_date == today_str %}<span class="card-tag tag-new">今日新增</span>{% endif %}
                 <div class="card-title">
                     <a href="{{ item.url }}" target="_blank">{{ item.title_zh or item.title }}</a>
                 </div>

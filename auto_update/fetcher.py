@@ -206,10 +206,16 @@ def _search_google_news_rss(queries: list) -> list[NewsItem]:
                         "%Y-%m-%d"
                     )
 
+                raw_summary = entry.get("summary", "").strip()
+                if "<" in raw_summary:
+                    from bs4 import BeautifulSoup
+                    raw_summary = BeautifulSoup(raw_summary, "html.parser").get_text()
+                raw_summary = raw_summary[:500]
+
                 item = NewsItem(
                     title=entry.get("title", "").strip(),
                     url=url,
-                    summary=entry.get("summary", "").strip()[:500],
+                    summary=raw_summary,
                     source=entry.get("source", {}).get("title", "Google News"),
                     published=pub_date,
                 )
