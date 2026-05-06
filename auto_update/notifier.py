@@ -1,7 +1,11 @@
 """
 WeChat Work (企业微信) webhook notification for daily news updates.
-Sends a markdown-formatted summary of new articles, prioritized by:
-  Akulaku > Regulation > Others
+
+Design informed by internal-comms best practices:
+  - Newsletter pattern: emoji section headers + concise bullets
+  - 3P principle: data-driven, scannable in 30-60s
+  - General comms: important-first, active voice, include links
+  - Priority: Akulaku > Regulation > Others
 """
 import logging
 import requests
@@ -13,127 +17,132 @@ WECHAT_WEBHOOK_URL = (
     "?key=dd8952d8-8721-40e1-a674-b80d65a229ca"
 )
 
-SECTION_PRIORITY = {
-    "akulaku": 0,
-    "regulation": 1,
-    "credit_card": 2,
-    "digital_lending": 3,
-    "cash_loan": 4,
-    "bnpl": 5,
-    "digital_bank": 6,
+WEBSITE_URL = "https://yingxiang-1025.github.io/ph-fintech-daily/"
+
+SECTION_META = {
+    "akulaku":        {"priority": 0, "label": "Akulaku",  "emoji": "🏦"},
+    "regulation":     {"priority": 1, "label": "监管动态", "emoji": "📋"},
+    "credit_card":    {"priority": 2, "label": "信用卡",   "emoji": "💳"},
+    "digital_lending":{"priority": 3, "label": "数字信贷", "emoji": "💰"},
+    "cash_loan":      {"priority": 4, "label": "现金贷",   "emoji": "💵"},
+    "bnpl":           {"priority": 5, "label": "BNPL",     "emoji": "🛒"},
+    "digital_bank":   {"priority": 6, "label": "数字银行", "emoji": "📱"},
 }
 
-
-def _priority_key(item: dict) -> int:
-    """Return the highest priority (lowest number) among the item's sections."""
-    sections = item.get("sections", [])
-    return min((SECTION_PRIORITY.get(s, 99) for s in sections), default=99)
+_DEFAULT_META = {"priority": 99, "label": "金融科技", "emoji": "📊"}
 
 
-def _section_label(item: dict) -> str:
-    """Return the display label for the item's highest-priority section."""
-    labels = {
-        "akulaku": "Akulaku",
-        "regulation": "监管动态",
-        "credit_card": "信用卡",
-        "digital_lending": "数字信贷",
-        "cash_loan": "现金贷",
-        "bnpl": "BNPL",
-        "digital_bank": "数字银行",
-    }
+def _best_section(item: dict) -> str:
     sections = item.get("sections", [])
     if not sections:
-        return "金融科技"
-    best = min(sections, key=lambda s: SECTION_PRIORITY.get(s, 99))
-    return labels.get(best, "金融科技")
+        return "other"
+    return min(sections, key=lambda s: SECTION_META.get(s, _DEFAULT_META)["priority"])
+
+
+def _meta(section: str) -> dict:
+    return SECTION_META.get(section, _DEFAULT_META)
+
+
+def _clean(text: str) -> str:
+    if not text:
+        return ""
+    out = text.replace("\n", " ").strip()
+    if "<" in out:
+        from bs4 import BeautifulSoup
+        out = BeautifulSoup(out, "html.parser").get_text()
+    return out
 
 
 def _truncate(text: str, max_len: int = 80) -> str:
-    if not text:
-        return ""
-    clean = text.replace("\n", " ").strip()
-    if "<" in clean:
-        from bs4 import BeautifulSoup
-        clean = BeautifulSoup(clean, "html.parser").get_text()
-    return clean[:max_len] + "..." if len(clean) > max_len else clean
+    clean = _clean(text)
+    return clean[:max_len] + "…" if len(clean) > max_len else clean
 
 
-def _build_digest(sorted_items: list[dict]) -> str:
-    """Build a readable narrative digest (100-200 chars) from actual news."""
-    sentences = []
-    seen_sections = set()
-    for item in sorted_items:
-        best_sec = min(
-            item.get("sections", ["other"]),
-            key=lambda s: SECTION_PRIORITY.get(s, 99),
-        )
-        if best_sec in seen_sections:
-            continue
-        seen_sections.add(best_sec)
+def _title_text(item: dict) -> str:
+    raw = item.get("title_zh") or item.get("title", "")
+    return raw.split("】")[-1].strip() if "】" in raw else raw
 
-        summary = item.get("summary_zh") or item.get("summary", "")
-        title = item.get("title_zh") or item.get("title", "")
-        raw = title.split("】")[-1].strip() if "】" in title else title
-        raw = raw.replace("\n", "").strip()
 
-        brief = _truncate(summary, 50) if summary else _truncate(raw, 40)
-        label = _section_label(item)
-        sentences.append(f"{label}方面，{brief}")
+def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
+    """Group items by their best section, preserving priority order."""
+    groups: dict[str, list[dict]] = {}
+    for item in items:
+        sec = _best_section(item)
+        groups.setdefault(sec, []).append(item)
+    return dict(
+        sorted(groups.items(), key=lambda kv: _meta(kv[0])["priority"])
+    )
 
-        if len("。".join(sentences)) >= 160:
+
+def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
+    """Build a narrative digest (100-200 chars) highlighting each sector's key move."""
+    parts = []
+    for sec, items in groups.items():
+        meta = _meta(sec)
+        top = items[0]
+        summary = _clean(top.get("summary_zh") or top.get("summary", ""))
+        title = _title_text(top)
+        brief = _truncate(summary, 45) if summary else _truncate(title, 35)
+        parts.append(f"{meta['label']}：{brief}")
+        if len("；".join(parts)) >= 170:
             break
 
-    result = "。".join(sentences)
-    if len(result) > 200:
-        result = result[:197] + "…"
-    if not result.endswith("。"):
-        result += "。"
-    return result
+    digest = "；".join(parts)
+    if len(digest) > 200:
+        digest = digest[:197] + "…"
+    if not digest.endswith("。"):
+        digest += "。"
+    return digest
 
 
 def build_message(new_items: list[dict], today_str: str) -> str | None:
-    """Build a two-part markdown message for WeChat Work webhook.
-    Part 1: Substantive digest summary (50-100 chars)
-    Part 2: News list with brief + link
-    Returns None if no items to send."""
+    """Build a structured markdown message for WeChat Work.
+
+    Structure (inspired by internal-comms newsletter + 3P patterns):
+      Header  — title bar with date and count
+      Digest  — 100-200 char executive summary
+      Sections — grouped by category, emoji headers, top items with links
+      Footer  — website link
+    """
     if not new_items:
         return None
 
-    sorted_items = sorted(new_items, key=_priority_key)
-    digest = _build_digest(sorted_items)
+    groups = _group_by_section(new_items)
+    total = len(new_items)
+    major_count = sum(1 for n in new_items if n.get("is_major"))
+    digest = _build_digest(groups, total)
 
     lines = [
-        f"**📰 菲律宾金融科技日报 | {today_str}**",
-        f"新增 {len(sorted_items)} 条资讯",
-        "",
-        f"> **今日要点：**{digest}",
-        "",
+        f"📰 **菲律宾金融科技日报 | {today_str}**",
+        f"新增<font color=\"info\">{total}</font>条",
     ]
+    if major_count:
+        lines[-1] += f"　其中<font color=\"warning\">{major_count}条重大</font>"
+    lines.append("")
+    lines.append(f"> {digest}")
+    lines.append("")
 
-    show_count = min(len(sorted_items), 5)
-    for i, item in enumerate(sorted_items[:show_count], 1):
-        label = _section_label(item)
-        title_raw = item.get("title_zh") or item.get("title", "")
-        title = title_raw.split("】")[-1].strip() if "】" in title_raw else title_raw
-        title = _truncate(title, 50)
-        brief = _truncate(item.get("summary_zh") or item.get("summary", ""), 60)
-        url = item.get("url", "")
-        major = "🔴 " if item.get("is_major") else ""
-
-        lines.append(f"**{major}{i}. [{label}] {title}**")
-        if brief:
-            lines.append(f"> {brief}")
-        if url:
-            lines.append(f"[原文链接]({url})")
+    item_no = 0
+    for sec, items in groups.items():
+        meta = _meta(sec)
+        lines.append(f"{meta['emoji']} **{meta['label']}**（{len(items)}条）")
+        for item in items[:2]:
+            item_no += 1
+            title = _truncate(_title_text(item), 45)
+            url = item.get("url", "")
+            major_tag = "🔴 " if item.get("is_major") else ""
+            summary = _truncate(
+                item.get("summary_zh") or item.get("summary", ""), 55
+            )
+            link_part = f"[{title}]({url})" if url else title
+            lines.append(f"  {major_tag}{item_no}. {link_part}")
+            if summary:
+                lines.append(f"  > {summary}")
+        if len(items) > 2:
+            lines.append(f"  ...另有{len(items) - 2}条")
         lines.append("")
 
-    if len(sorted_items) > show_count:
-        lines.append(f"...另有 {len(sorted_items) - show_count} 条资讯")
-        lines.append("")
-
-    lines.append(
-        "[🌐 查看完整网站](https://yingxiang-1025.github.io/ph-fintech-daily/)"
-    )
+    lines.append(f"[🌐 查看完整日报]({WEBSITE_URL})")
 
     return "\n".join(lines)
 
@@ -141,35 +150,25 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
 def send_wechat_notification(new_items: list[dict], today_str: str) -> bool:
     """Send a WeChat Work webhook notification with today's new articles.
     Returns True if sent successfully, False otherwise.
-    Does NOT send if there are no new items."""
+    Skips silently if there are no new items."""
     if not new_items:
-        logger.info("No new items today. Skipping WeChat notification.")
+        logger.info("No new items today — skipping WeChat push.")
         return False
 
     message = build_message(new_items, today_str)
     if not message:
         return False
 
-    payload = {
-        "msgtype": "markdown",
-        "markdown": {
-            "content": message,
-        },
-    }
+    payload = {"msgtype": "markdown", "markdown": {"content": message}}
 
     try:
         resp = requests.post(WECHAT_WEBHOOK_URL, json=payload, timeout=10)
         result = resp.json()
         if result.get("errcode") == 0:
-            logger.info(
-                f"WeChat notification sent: {len(new_items)} items"
-            )
+            logger.info(f"WeChat push OK: {len(new_items)} items sent")
             return True
-        else:
-            logger.warning(
-                f"WeChat webhook returned error: {result.get('errmsg', 'unknown')}"
-            )
-            return False
+        logger.warning(f"WeChat webhook error: {result.get('errmsg', '?')}")
+        return False
     except Exception as e:
-        logger.error(f"WeChat notification failed: {e}")
+        logger.error(f"WeChat push failed: {e}")
         return False
