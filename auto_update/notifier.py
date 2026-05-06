@@ -59,27 +59,35 @@ def _truncate(text: str, max_len: int = 80) -> str:
 
 
 def _build_digest(sorted_items: list[dict]) -> str:
-    """Build a substantive digest (50-100 chars) from actual news content."""
-    snippets = []
+    """Build a readable narrative digest (100-200 chars) from actual news."""
+    sentences = []
     seen_sections = set()
     for item in sorted_items:
-        sec = item.get("sections", ["other"])[0]
-        if sec in seen_sections:
+        best_sec = min(
+            item.get("sections", ["other"]),
+            key=lambda s: SECTION_PRIORITY.get(s, 99),
+        )
+        if best_sec in seen_sections:
             continue
-        seen_sections.add(sec)
+        seen_sections.add(best_sec)
+
         summary = item.get("summary_zh") or item.get("summary", "")
         title = item.get("title_zh") or item.get("title", "")
-        text = title.split("】")[-1].strip() if "】" in title else title
-        text = text.replace("\n", "").strip()
-        if len(text) > 25:
-            text = text[:25] + "…"
-        snippets.append(text)
-        if len("；".join(snippets)) >= 80:
+        raw = title.split("】")[-1].strip() if "】" in title else title
+        raw = raw.replace("\n", "").strip()
+
+        brief = _truncate(summary, 50) if summary else _truncate(raw, 40)
+        label = _section_label(item)
+        sentences.append(f"{label}方面，{brief}")
+
+        if len("。".join(sentences)) >= 160:
             break
 
-    result = "；".join(snippets)
-    if len(result) > 100:
-        result = result[:97] + "…"
+    result = "。".join(sentences)
+    if len(result) > 200:
+        result = result[:197] + "…"
+    if not result.endswith("。"):
+        result += "。"
     return result
 
 
@@ -102,7 +110,7 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
         "",
     ]
 
-    show_count = min(len(sorted_items), 10)
+    show_count = min(len(sorted_items), 5)
     for i, item in enumerate(sorted_items[:show_count], 1):
         label = _section_label(item)
         title_raw = item.get("title_zh") or item.get("title", "")
