@@ -75,23 +75,51 @@ def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
 
 
 def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
-    """Build a narrative digest (100-200 chars) highlighting each sector's key move."""
-    parts = []
+    """Build a readable narrative digest (100-300 chars).
+
+    Produces flowing Chinese prose that synthesizes each sector's key
+    development into a coherent paragraph, not a label-list.
+    """
+    sentences = []
     for sec, items in groups.items():
         meta = _meta(sec)
         top = items[0]
         summary = _clean(top.get("summary_zh") or top.get("summary", ""))
-        title = _title_text(top)
-        brief = _truncate(summary, 45) if summary else _truncate(title, 35)
-        parts.append(f"{meta['label']}：{brief}")
-        if len("；".join(parts)) >= 170:
+        title = _clean(_title_text(top))
+
+        text = summary if len(summary) > 15 else title
+        text = _truncate(text, 60)
+
+        if sec == "akulaku":
+            sentences.append(f"Akulaku方面，{text}")
+        elif sec == "regulation":
+            sentences.append(f"监管层面，{text}")
+        elif sec == "credit_card":
+            sentences.append(f"信用卡领域，{text}")
+        elif sec == "digital_lending":
+            sentences.append(f"数字信贷方面，{text}")
+        elif sec == "cash_loan":
+            sentences.append(f"现金贷方面，{text}")
+        elif sec == "bnpl":
+            sentences.append(f"先买后付（BNPL）方面，{text}")
+        elif sec == "digital_bank":
+            sentences.append(f"数字银行领域，{text}")
+        else:
+            sentences.append(f"此外，{text}")
+
+        joined = "。".join(sentences) + "。"
+        if len(joined) >= 280:
             break
 
-    digest = "；".join(parts)
-    if len(digest) > 200:
-        digest = digest[:197] + "…"
+    remaining_secs = len(groups) - len(sentences)
+    if remaining_secs > 0:
+        sentences.append(f"另有{remaining_secs}个板块有新动态")
+
+    digest = "。".join(sentences)
     if not digest.endswith("。"):
         digest += "。"
+    if len(digest) > 300:
+        digest = digest[:297] + "…"
     return digest
 
 
