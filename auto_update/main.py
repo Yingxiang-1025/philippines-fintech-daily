@@ -122,6 +122,15 @@ def run_update(dry_run: bool = False):
 
     major_count = sum(1 for n in new_dicts if n.get("is_major"))
     logger.info(f"Major news items: {major_count}")
+
+    # 10. WeChat Work notification (only new items, translated)
+    translated_new = [n for n in all_news if n.get("fetched_date") == today_stamp]
+    if translated_new:
+        from notifier import send_wechat_notification
+        send_wechat_notification(translated_new, today_stamp)
+    else:
+        logger.info("No new items for WeChat notification.")
+
     logger.info("Update complete!")
 
 

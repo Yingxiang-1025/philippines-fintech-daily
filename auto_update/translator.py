@@ -23,22 +23,35 @@ def _get_translator():
     return _translator
 
 
-def google_translate(text: str) -> str:
+def _has_chinese(text: str) -> bool:
+    return any("\u4e00" <= c <= "\u9fff" for c in (text or ""))
+
+
+def google_translate(text: str, retries: int = 2) -> str:
     """Translate English text to Chinese via free Google Translate.
-    Returns original text unchanged on any failure."""
+    Retries if result contains no Chinese characters.
+    Returns original text unchanged on failure."""
     if not text or not text.strip():
+        return text
+    if _has_chinese(text):
         return text
     translator = _get_translator()
     if not translator:
         return text
-    try:
-        chunk = text[:4500] if len(text) > 4500 else text
-        result = translator.translate(chunk)
-        time.sleep(0.35)
-        return result if result else text
-    except Exception as e:
-        logger.warning(f"Google Translate failed: {e}")
-        return text
+    chunk = text[:4500] if len(text) > 4500 else text
+    for attempt in range(retries + 1):
+        try:
+            result = translator.translate(chunk)
+            time.sleep(0.4)
+            if result and _has_chinese(result):
+                return result
+            if attempt < retries:
+                time.sleep(1)
+        except Exception as e:
+            logger.warning(f"Google Translate attempt {attempt+1} failed: {e}")
+            if attempt < retries:
+                time.sleep(2)
+    return text
 
 
 SOURCE_MAP = {
@@ -116,7 +129,7 @@ def translate_news_item(item: dict) -> dict:
         item["summary_zh"] = translate_summary(summary_en)
 
     title_zh = item.get("title_zh", "")
-    if not title_zh or title_zh == item.get("title", ""):
+    if not title_zh or title_zh == item.get("title", "") or not _has_chinese(title_zh):
         item["title_zh"] = translate_title(item.get("title", ""))
 
     if not item.get("source_zh"):
