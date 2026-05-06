@@ -65,7 +65,14 @@ def _clean(text: str) -> str:
 
 def _truncate(text: str, max_len: int = 80) -> str:
     clean = _clean(text)
-    return clean[:max_len] + "…" if len(clean) > max_len else clean
+    if len(clean) <= max_len:
+        return clean
+    cut = clean[:max_len]
+    for sep in ["。", "；", "，", "、", " "]:
+        pos = cut.rfind(sep)
+        if pos > max_len // 2:
+            return cut[:pos + 1].rstrip("，、；") + "…"
+    return cut + "…"
 
 
 def _title_text(item: dict) -> str:
