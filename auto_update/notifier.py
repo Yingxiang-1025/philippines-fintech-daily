@@ -1,11 +1,11 @@
 """
-WeChat Work (企业微信) webhook notification for daily news updates.
+WeChat Work (企业微信) webhook notification for Philippines daily news.
 
-Design informed by internal-comms best practices:
-  - Newsletter pattern: emoji section headers + concise bullets
-  - 3P principle: data-driven, scannable in 30-60s
-  - General comms: important-first, active voice, include links
-  - Priority: Akulaku > Regulation > Others
+Format:
+  Part 1 — 昨日动态：200-300字通顺中文重点汇总
+  Part 2 — 明细：每条含完整中文提炼 + 原文链接
+  Footer — 查看完整日报（可点击直达网站）
+Priority: Akulaku > 监管 > Others
 """
 import logging
 import requests
@@ -30,6 +30,16 @@ SECTION_META = {
 }
 
 _DEFAULT_META = {"priority": 99, "label": "金融科技", "emoji": "📊"}
+
+CONNECTORS = {
+    "akulaku": "Akulaku方面，",
+    "regulation": "监管层面，",
+    "credit_card": "信用卡领域，",
+    "digital_lending": "数字信贷方面，",
+    "cash_loan": "现金贷方面，",
+    "bnpl": "先买后付（BNPL）方面，",
+    "digital_bank": "数字银行领域，",
+}
 
 
 def _best_section(item: dict) -> str:
@@ -64,7 +74,6 @@ def _title_text(item: dict) -> str:
 
 
 def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
-    """Group items by their best section, preserving priority order."""
     groups: dict[str, list[dict]] = {}
     for item in items:
         sec = _best_section(item)
@@ -74,46 +83,37 @@ def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
     )
 
 
-def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
-    """Build a readable narrative digest (100-300 chars).
+# ─── Part 1: 昨日动态 ────────────────────────────────────
 
-    Produces flowing Chinese prose that synthesizes each sector's key
-    development into a coherent paragraph, not a label-list.
+def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
+    """Build 200-300 char fluent Chinese narrative summary.
+
+    Each sector's top story is woven into a coherent paragraph with
+    natural connectors. No broken sentences.
     """
     sentences = []
     for sec, items in groups.items():
-        meta = _meta(sec)
         top = items[0]
         summary = _clean(top.get("summary_zh") or top.get("summary", ""))
         title = _clean(_title_text(top))
 
-        text = summary if len(summary) > 15 else title
-        text = _truncate(text, 60)
+        text = summary if len(summary) > 20 else title
+        text = _truncate(text, 65)
+        if text.endswith("…"):
+            last_punc = max(text.rfind("，"), text.rfind("、"), text.rfind("；"))
+            if last_punc > len(text) // 2:
+                text = text[:last_punc] + "等"
 
-        if sec == "akulaku":
-            sentences.append(f"Akulaku方面，{text}")
-        elif sec == "regulation":
-            sentences.append(f"监管层面，{text}")
-        elif sec == "credit_card":
-            sentences.append(f"信用卡领域，{text}")
-        elif sec == "digital_lending":
-            sentences.append(f"数字信贷方面，{text}")
-        elif sec == "cash_loan":
-            sentences.append(f"现金贷方面，{text}")
-        elif sec == "bnpl":
-            sentences.append(f"先买后付（BNPL）方面，{text}")
-        elif sec == "digital_bank":
-            sentences.append(f"数字银行领域，{text}")
-        else:
-            sentences.append(f"此外，{text}")
+        prefix = CONNECTORS.get(sec, "此外，")
+        sentences.append(f"{prefix}{text}")
 
         joined = "。".join(sentences) + "。"
         if len(joined) >= 280:
             break
 
-    remaining_secs = len(groups) - len(sentences)
-    if remaining_secs > 0:
-        sentences.append(f"另有{remaining_secs}个板块有新动态")
+    remaining = len(groups) - len(sentences)
+    if remaining > 0:
+        sentences.append(f"另有{remaining}个板块有新动态")
 
     digest = "。".join(sentences)
     if not digest.endswith("。"):
@@ -123,15 +123,39 @@ def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
     return digest
 
 
-def build_message(new_items: list[dict], today_str: str) -> str | None:
-    """Build a structured markdown message for WeChat Work.
+# ─── Part 2: 明细 ────────────────────────────────────────
 
-    Structure (inspired by internal-comms newsletter + 3P patterns):
-      Header  — title bar with date and count
-      Digest  — 100-200 char executive summary
-      Sections — grouped by category, emoji headers, top items with links
-      Footer  — website link
-    """
+def _build_details(groups: dict[str, list[dict]]) -> list[str]:
+    """Build detail lines: each item with full Chinese summary + link."""
+    lines = []
+    item_no = 0
+    for sec, items in groups.items():
+        meta = _meta(sec)
+        lines.append(f"{meta['emoji']} **{meta['label']}**（{len(items)}条）")
+        for item in items[:3]:
+            item_no += 1
+            title = _truncate(_title_text(item), 50)
+            url = item.get("url", "")
+            major_tag = "🔴" if item.get("is_major") else ""
+            summary = _truncate(
+                item.get("summary_zh") or item.get("summary", ""), 80
+            )
+            if major_tag:
+                title = f"{major_tag}{title}"
+            lines.append(f"{item_no}. **{title}**")
+            if summary:
+                lines.append(f"> {summary}")
+            if url:
+                lines.append(f"[查看原文]({url})")
+        if len(items) > 3:
+            lines.append(f"...另有{len(items) - 3}条")
+        lines.append("")
+    return lines
+
+
+# ─── Assemble ────────────────────────────────────────────
+
+def build_message(new_items: list[dict], today_str: str) -> str | None:
     if not new_items:
         return None
 
@@ -142,33 +166,18 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
 
     lines = [
         f"📰 **菲律宾金融科技日报 | {today_str}**",
-        f"新增<font color=\"info\">{total}</font>条",
+        f"新增<font color=\"info\">{total}</font>条资讯",
     ]
     if major_count:
         lines[-1] += f"　其中<font color=\"warning\">{major_count}条重大</font>"
     lines.append("")
+
+    lines.append("**📋 昨日动态**")
     lines.append(f"> {digest}")
     lines.append("")
 
-    item_no = 0
-    for sec, items in groups.items():
-        meta = _meta(sec)
-        lines.append(f"{meta['emoji']} **{meta['label']}**（{len(items)}条）")
-        for item in items[:2]:
-            item_no += 1
-            title = _truncate(_title_text(item), 45)
-            url = item.get("url", "")
-            major_tag = "🔴 " if item.get("is_major") else ""
-            summary = _truncate(
-                item.get("summary_zh") or item.get("summary", ""), 55
-            )
-            link_part = f"[{title}]({url})" if url else title
-            lines.append(f"  {major_tag}{item_no}. {link_part}")
-            if summary:
-                lines.append(f"  > {summary}")
-        if len(items) > 2:
-            lines.append(f"  ...另有{len(items) - 2}条")
-        lines.append("")
+    lines.append("**📝 明细**")
+    lines.extend(_build_details(groups))
 
     lines.append(f"[🌐 查看完整日报]({WEBSITE_URL})")
 
@@ -176,9 +185,6 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
 
 
 def send_wechat_notification(new_items: list[dict], today_str: str) -> bool:
-    """Send a WeChat Work webhook notification with today's new articles.
-    Returns True if sent successfully, False otherwise.
-    Skips silently if there are no new items."""
     if not new_items:
         logger.info("No new items today — skipping WeChat push.")
         return False
