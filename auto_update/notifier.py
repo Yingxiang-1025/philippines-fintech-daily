@@ -58,38 +58,67 @@ def _truncate(text: str, max_len: int = 80) -> str:
     return clean[:max_len] + "..." if len(clean) > max_len else clean
 
 
+def _build_digest(sorted_items: list[dict]) -> str:
+    """Build a concise digest (<=100 chars) summarizing the day's key themes."""
+    akulaku = [i for i in sorted_items if "akulaku" in i.get("sections", [])]
+    reg = [i for i in sorted_items if "regulation" in i.get("sections", [])]
+    others = [i for i in sorted_items if i not in akulaku and i not in reg]
+
+    parts = []
+    if akulaku:
+        title = _truncate(akulaku[0].get("title_zh") or akulaku[0].get("title", ""), 30)
+        title = title.split("】")[-1].strip() if "】" in title else title
+        parts.append(f"Akulaku：{title}")
+    if reg:
+        title = _truncate(reg[0].get("title_zh") or reg[0].get("title", ""), 30)
+        title = title.split("】")[-1].strip() if "】" in title else title
+        parts.append(f"监管：{title}")
+    if others:
+        cats = set()
+        for o in others:
+            cats.add(_section_label(o))
+        cats_str = "、".join(list(cats)[:3])
+        parts.append(f"另有{cats_str}等{len(others)}条动态")
+
+    digest = "；".join(parts)
+    return digest[:100]
+
+
 def build_message(new_items: list[dict], today_str: str) -> str | None:
-    """Build a markdown message for WeChat Work webhook.
+    """Build a compact two-part markdown message for WeChat Work webhook.
+    Part 1: Digest summary (<=100 chars)
+    Part 2: Concise news list with links
     Returns None if no items to send."""
     if not new_items:
         return None
 
     sorted_items = sorted(new_items, key=_priority_key)
+    digest = _build_digest(sorted_items)
 
     lines = [
-        f"## 📰 菲律宾金融科技日报",
-        f"**日期：{today_str}　|　新增 {len(sorted_items)} 条**\n",
+        f"**菲律宾金融科技日报 | {today_str}**",
+        f"今日新增 {len(sorted_items)} 条",
+        "",
+        f"> {digest}",
+        "",
     ]
 
-    for i, item in enumerate(sorted_items[:15], 1):
+    show_count = min(len(sorted_items), 10)
+    for i, item in enumerate(sorted_items[:show_count], 1):
         label = _section_label(item)
-        title = item.get("title_zh") or item.get("title", "")
-        summary = _truncate(item.get("summary_zh") or item.get("summary", ""), 100)
+        title_raw = item.get("title_zh") or item.get("title", "")
+        title = title_raw.split("】")[-1].strip() if "】" in title_raw else title_raw
+        title = _truncate(title, 40)
         url = item.get("url", "")
-        is_major = "🔴 " if item.get("is_major") else ""
+        major = "🔴" if item.get("is_major") else ""
+        lines.append(f"{major}{i}.[{label}] [{title}]({url})")
 
-        lines.append(f"**{is_major}{i}. [{label}] {title}**")
-        if summary:
-            lines.append(f"> {summary}")
-        if url:
-            lines.append(f"[查看原文]({url})\n")
+    if len(sorted_items) > show_count:
+        lines.append(f"...另有 {len(sorted_items) - show_count} 条")
 
-    if len(sorted_items) > 15:
-        lines.append(f"*...及其他 {len(sorted_items) - 15} 条新闻*\n")
-
+    lines.append("")
     lines.append(
-        "[🌐 查看完整网站]"
-        "(https://yingxiang-1025.github.io/ph-fintech-daily/)"
+        "[查看完整网站](https://yingxiang-1025.github.io/ph-fintech-daily/)"
     )
 
     return "\n".join(lines)
