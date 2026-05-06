@@ -92,41 +92,44 @@ def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
 
 # ─── Part 1: 昨日动态 ────────────────────────────────────
 
-def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
-    """Build 200-300 char fluent Chinese narrative summary.
+_INNER_CONNECTORS = ["同时，", "此外，", "另外，", "值得关注的是，"]
 
-    When few sections exist, includes multiple items from each section
-    to produce a sufficiently detailed summary.
-    """
-    sentences = []
+
+def _strip_source_suffix(text: str) -> str:
+    """Remove trailing source names (e.g. '- Fintech News', '| Reuters')."""
+    for sep in [" - ", " — ", " | ", " · "]:
+        pos = text.rfind(sep)
+        if pos > len(text) // 2:
+            text = text[:pos]
+    return text.strip()
+
+
+def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
+    """Build 200-300 char fluent, readable Chinese narrative paragraph."""
+    all_sentences = []
     items_per_section = max(1, 4 // max(len(groups), 1))
 
     for sec, items in groups.items():
         prefix = CONNECTORS.get(sec, "此外，")
-        sec_parts = []
-        for item in items[:items_per_section]:
+        for idx, item in enumerate(items[:items_per_section]):
             summary = _clean(item.get("summary_zh") or item.get("summary", ""))
             title = _clean(_title_text(item))
             text = summary if len(summary) > 20 else title
-            text = _truncate(text, 55)
-            if text.endswith("…"):
-                last_punc = max(text.rfind("，"), text.rfind("、"), text.rfind("；"))
-                if last_punc > len(text) // 2:
-                    text = text[:last_punc] + "等"
-            sec_parts.append(text)
+            text = _strip_source_suffix(text)
+            text = _truncate(text, 50)
 
-        combined = "；".join(sec_parts)
-        sentences.append(f"{prefix}{combined}")
+            if idx == 0:
+                all_sentences.append(f"{prefix}{text}")
+            else:
+                conn = _INNER_CONNECTORS[min(idx - 1, len(_INNER_CONNECTORS) - 1)]
+                all_sentences.append(f"{conn}{text}")
 
-        joined = "。".join(sentences) + "。"
-        if len(joined) >= 280:
+            if len("。".join(all_sentences) + "。") >= 280:
+                break
+        if len("。".join(all_sentences) + "。") >= 280:
             break
 
-    remaining = len(groups) - len(sentences)
-    if remaining > 0:
-        sentences.append(f"另有{remaining}个板块有新动态")
-
-    digest = "。".join(sentences)
+    digest = "。".join(all_sentences)
     if not digest.endswith("。"):
         digest += "。"
     if len(digest) > 300:
