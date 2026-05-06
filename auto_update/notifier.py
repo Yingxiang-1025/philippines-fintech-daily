@@ -59,35 +59,34 @@ def _truncate(text: str, max_len: int = 80) -> str:
 
 
 def _build_digest(sorted_items: list[dict]) -> str:
-    """Build a concise digest (<=100 chars) summarizing the day's key themes."""
-    akulaku = [i for i in sorted_items if "akulaku" in i.get("sections", [])]
-    reg = [i for i in sorted_items if "regulation" in i.get("sections", [])]
-    others = [i for i in sorted_items if i not in akulaku and i not in reg]
+    """Build a substantive digest (50-100 chars) from actual news content."""
+    snippets = []
+    seen_sections = set()
+    for item in sorted_items:
+        sec = item.get("sections", ["other"])[0]
+        if sec in seen_sections:
+            continue
+        seen_sections.add(sec)
+        summary = item.get("summary_zh") or item.get("summary", "")
+        title = item.get("title_zh") or item.get("title", "")
+        text = title.split("】")[-1].strip() if "】" in title else title
+        text = text.replace("\n", "").strip()
+        if len(text) > 25:
+            text = text[:25] + "…"
+        snippets.append(text)
+        if len("；".join(snippets)) >= 80:
+            break
 
-    parts = []
-    if akulaku:
-        title = _truncate(akulaku[0].get("title_zh") or akulaku[0].get("title", ""), 30)
-        title = title.split("】")[-1].strip() if "】" in title else title
-        parts.append(f"Akulaku：{title}")
-    if reg:
-        title = _truncate(reg[0].get("title_zh") or reg[0].get("title", ""), 30)
-        title = title.split("】")[-1].strip() if "】" in title else title
-        parts.append(f"监管：{title}")
-    if others:
-        cats = set()
-        for o in others:
-            cats.add(_section_label(o))
-        cats_str = "、".join(list(cats)[:3])
-        parts.append(f"另有{cats_str}等{len(others)}条动态")
-
-    digest = "；".join(parts)
-    return digest[:100]
+    result = "；".join(snippets)
+    if len(result) > 100:
+        result = result[:97] + "…"
+    return result
 
 
 def build_message(new_items: list[dict], today_str: str) -> str | None:
-    """Build a compact two-part markdown message for WeChat Work webhook.
-    Part 1: Digest summary (<=100 chars)
-    Part 2: Concise news list with links
+    """Build a two-part markdown message for WeChat Work webhook.
+    Part 1: Substantive digest summary (50-100 chars)
+    Part 2: News list with brief + link
     Returns None if no items to send."""
     if not new_items:
         return None
@@ -96,10 +95,10 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
     digest = _build_digest(sorted_items)
 
     lines = [
-        f"**菲律宾金融科技日报 | {today_str}**",
-        f"今日新增 {len(sorted_items)} 条",
+        f"**📰 菲律宾金融科技日报 | {today_str}**",
+        f"新增 {len(sorted_items)} 条资讯",
         "",
-        f"> {digest}",
+        f"> **今日要点：**{digest}",
         "",
     ]
 
@@ -108,17 +107,24 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
         label = _section_label(item)
         title_raw = item.get("title_zh") or item.get("title", "")
         title = title_raw.split("】")[-1].strip() if "】" in title_raw else title_raw
-        title = _truncate(title, 40)
+        title = _truncate(title, 50)
+        brief = _truncate(item.get("summary_zh") or item.get("summary", ""), 60)
         url = item.get("url", "")
-        major = "🔴" if item.get("is_major") else ""
-        lines.append(f"{major}{i}.[{label}] [{title}]({url})")
+        major = "🔴 " if item.get("is_major") else ""
+
+        lines.append(f"**{major}{i}. [{label}] {title}**")
+        if brief:
+            lines.append(f"> {brief}")
+        if url:
+            lines.append(f"[原文链接]({url})")
+        lines.append("")
 
     if len(sorted_items) > show_count:
-        lines.append(f"...另有 {len(sorted_items) - show_count} 条")
+        lines.append(f"...另有 {len(sorted_items) - show_count} 条资讯")
+        lines.append("")
 
-    lines.append("")
     lines.append(
-        "[查看完整网站](https://yingxiang-1025.github.io/ph-fintech-daily/)"
+        "[🌐 查看完整网站](https://yingxiang-1025.github.io/ph-fintech-daily/)"
     )
 
     return "\n".join(lines)
