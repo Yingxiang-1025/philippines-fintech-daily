@@ -2,11 +2,12 @@
 WeChat Work (企业微信) webhook notification for Philippines daily news.
 
 Format:
-  Part 1 — 昨日动态：200-300字通顺中文重点汇总
-  Part 2 — 明细：每条含完整中文提炼 + 原文链接
-  Footer — 查看完整日报（可点击直达网站）
+  Part 1 — 昨日动态：200-300字通顺中文段落
+  Part 2 — 明细：每条含完整中文标题 + 完整摘要 + 原文链接
+  Footer — 查看完整日报链接
 Priority: Akulaku > 监管 > Others
 """
+import re
 import logging
 import requests
 
@@ -41,17 +42,10 @@ CONNECTORS = {
     "digital_bank": "数字银行领域，",
 }
 
-
-def _best_section(item: dict) -> str:
-    sections = item.get("sections", [])
-    if not sections:
-        return "other"
-    return min(sections, key=lambda s: SECTION_META.get(s, _DEFAULT_META)["priority"])
+_INNER_CONNECTORS = ["同时，", "此外，", "另外，", "值得关注的是，"]
 
 
-def _meta(section: str) -> dict:
-    return SECTION_META.get(section, _DEFAULT_META)
-
+# ─── Text Utils ──────────────────────────────────────────
 
 def _clean(text: str) -> str:
     if not text:
@@ -63,21 +57,54 @@ def _clean(text: str) -> str:
     return out
 
 
-def _truncate(text: str, max_len: int = 80) -> str:
-    clean = _clean(text)
-    if len(clean) <= max_len:
-        return clean
-    cut = clean[:max_len]
-    for sep in ["。", "；", "，", "、", " "]:
-        pos = cut.rfind(sep)
-        if pos > max_len // 2:
-            return cut[:pos + 1].rstrip("，、；") + "…"
-    return cut + "…"
+def _strip_trailing(text: str) -> str:
+    """Strip trailing source names, dangling separators, and URLs."""
+    for sep in [" - ", " — ", " | ", " · "]:
+        pos = text.rfind(sep)
+        if pos > len(text) // 3:
+            text = text[:pos].strip()
+    text = re.sub(r"\s+[A-Z][A-Za-z]{2,}(?:\s+[A-Z][A-Za-z]+)*\s*$", "", text)
+    text = re.sub(r"\s*https?://\S+$", "", text)
+    return text.strip()
+
+
+def _sentence_cut(text: str, max_len: int) -> str:
+    """Cut text at the last complete sentence boundary within max_len.
+    Only cuts at full-stop (。) or semicolon (；) to avoid half-clauses.
+    Strips trailing punctuation to prevent double-periods when joined."""
+    text = text.rstrip("。；，、 ")
+    if len(text) <= max_len:
+        return text
+    window = text[:max_len]
+    for punc in ["。", "；"]:
+        pos = window.rfind(punc)
+        if pos > max_len * 0.35:
+            return window[:pos].rstrip("。；，、 ")
+    return window.rstrip("。；，、 ")
+
+
+def _get_summary(item: dict) -> str:
+    raw = _clean(item.get("summary_zh") or item.get("summary", ""))
+    return _strip_trailing(raw)
 
 
 def _title_text(item: dict) -> str:
     raw = item.get("title_zh") or item.get("title", "")
-    return raw.split("】")[-1].strip() if "】" in raw else raw
+    body = raw.split("】")[-1].strip() if "】" in raw else raw
+    return _strip_trailing(body)
+
+
+# ─── Grouping ────────────────────────────────────────────
+
+def _best_section(item: dict) -> str:
+    sections = item.get("sections", [])
+    if not sections:
+        return "other"
+    return min(sections, key=lambda s: SECTION_META.get(s, _DEFAULT_META)["priority"])
+
+
+def _meta(section: str) -> dict:
+    return SECTION_META.get(section, _DEFAULT_META)
 
 
 def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
@@ -92,31 +119,18 @@ def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
 
 # ─── Part 1: 昨日动态 ────────────────────────────────────
 
-_INNER_CONNECTORS = ["同时，", "此外，", "另外，", "值得关注的是，"]
-
-
-def _strip_source_suffix(text: str) -> str:
-    """Remove trailing source names (e.g. '- Fintech News', '| Reuters')."""
-    for sep in [" - ", " — ", " | ", " · "]:
-        pos = text.rfind(sep)
-        if pos > len(text) // 2:
-            text = text[:pos]
-    return text.strip()
-
-
 def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
-    """Build 200-300 char fluent, readable Chinese narrative paragraph."""
+    """Build 200-300 char fluent Chinese paragraph with complete sentences only."""
     all_sentences = []
-    items_per_section = max(1, 4 // max(len(groups), 1))
+    items_per_section = max(1, 5 // max(len(groups), 1))
 
     for sec, items in groups.items():
         prefix = CONNECTORS.get(sec, "此外，")
         for idx, item in enumerate(items[:items_per_section]):
-            summary = _clean(item.get("summary_zh") or item.get("summary", ""))
-            title = _clean(_title_text(item))
-            text = summary if len(summary) > 20 else title
-            text = _strip_source_suffix(text)
-            text = _truncate(text, 50)
+            summary = _get_summary(item)
+            title = _title_text(item)
+            text = summary if len(summary) > 15 else title
+            text = _sentence_cut(text, 90)
 
             if idx == 0:
                 all_sentences.append(f"{prefix}{text}")
@@ -124,7 +138,8 @@ def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
                 conn = _INNER_CONNECTORS[min(idx - 1, len(_INNER_CONNECTORS) - 1)]
                 all_sentences.append(f"{conn}{text}")
 
-            if len("。".join(all_sentences) + "。") >= 280:
+            current = "。".join(all_sentences) + "。"
+            if len(current) >= 280:
                 break
         if len("。".join(all_sentences) + "。") >= 280:
             break
@@ -132,15 +147,13 @@ def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
     digest = "。".join(all_sentences)
     if not digest.endswith("。"):
         digest += "。"
-    if len(digest) > 300:
-        digest = digest[:297] + "…"
     return digest
 
 
 # ─── Part 2: 明细 ────────────────────────────────────────
 
 def _build_details(groups: dict[str, list[dict]]) -> list[str]:
-    """Build detail lines: each item with full Chinese summary + link."""
+    """Build detail lines with FULL titles and complete summary sentences."""
     lines = []
     item_no = 0
     for sec, items in groups.items():
@@ -148,15 +161,14 @@ def _build_details(groups: dict[str, list[dict]]) -> list[str]:
         lines.append(f"{meta['emoji']} **{meta['label']}**（{len(items)}条）")
         for item in items[:3]:
             item_no += 1
-            title = _truncate(_title_text(item), 50)
+            title = _title_text(item)
             url = item.get("url", "")
             major_tag = "🔴" if item.get("is_major") else ""
-            summary = _truncate(
-                item.get("summary_zh") or item.get("summary", ""), 80
-            )
-            if major_tag:
-                title = f"{major_tag}{title}"
-            lines.append(f"{item_no}. **{title}**")
+            summary = _get_summary(item)
+            summary = _sentence_cut(summary, 120)
+
+            display_title = f"{major_tag}{title}" if major_tag else title
+            lines.append(f"{item_no}. **{display_title}**")
             if summary:
                 lines.append(f"> {summary}")
             if url:
