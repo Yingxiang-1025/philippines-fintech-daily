@@ -95,24 +95,28 @@ def _group_by_section(items: list[dict]) -> dict[str, list[dict]]:
 def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
     """Build 200-300 char fluent Chinese narrative summary.
 
-    Each sector's top story is woven into a coherent paragraph with
-    natural connectors. No broken sentences.
+    When few sections exist, includes multiple items from each section
+    to produce a sufficiently detailed summary.
     """
     sentences = []
+    items_per_section = max(1, 4 // max(len(groups), 1))
+
     for sec, items in groups.items():
-        top = items[0]
-        summary = _clean(top.get("summary_zh") or top.get("summary", ""))
-        title = _clean(_title_text(top))
-
-        text = summary if len(summary) > 20 else title
-        text = _truncate(text, 65)
-        if text.endswith("…"):
-            last_punc = max(text.rfind("，"), text.rfind("、"), text.rfind("；"))
-            if last_punc > len(text) // 2:
-                text = text[:last_punc] + "等"
-
         prefix = CONNECTORS.get(sec, "此外，")
-        sentences.append(f"{prefix}{text}")
+        sec_parts = []
+        for item in items[:items_per_section]:
+            summary = _clean(item.get("summary_zh") or item.get("summary", ""))
+            title = _clean(_title_text(item))
+            text = summary if len(summary) > 20 else title
+            text = _truncate(text, 55)
+            if text.endswith("…"):
+                last_punc = max(text.rfind("，"), text.rfind("、"), text.rfind("；"))
+                if last_punc > len(text) // 2:
+                    text = text[:last_punc] + "等"
+            sec_parts.append(text)
+
+        combined = "；".join(sec_parts)
+        sentences.append(f"{prefix}{combined}")
 
         joined = "。".join(sentences) + "。"
         if len(joined) >= 280:
