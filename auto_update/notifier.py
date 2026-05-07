@@ -152,8 +152,8 @@ def _build_digest(groups: dict[str, list[dict]], total: int) -> str:
 
 # ─── Part 2: 明细 ────────────────────────────────────────
 
-def _build_details(groups: dict[str, list[dict]]) -> list[str]:
-    """Build detail lines with FULL titles and complete summary sentences."""
+def _build_details(groups: dict[str, list[dict]], digest: str = "") -> list[str]:
+    """Build detail lines. Skip summary if already in digest."""
     lines = []
     item_no = 0
     for sec, items in groups.items():
@@ -169,7 +169,7 @@ def _build_details(groups: dict[str, list[dict]]) -> list[str]:
 
             display_title = f"{major_tag}{title}" if major_tag else title
             lines.append(f"{item_no}. **{display_title}**")
-            if summary:
+            if summary and summary[:20] not in digest:
                 lines.append(f"> {summary}")
             if url:
                 lines.append(f"[查看原文]({url})")
@@ -203,7 +203,7 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
     lines.append("")
 
     lines.append("**📝 明细**")
-    lines.extend(_build_details(groups))
+    lines.extend(_build_details(groups, digest))
 
     lines.append(f"[🌐 查看完整日报]({WEBSITE_URL})")
 
