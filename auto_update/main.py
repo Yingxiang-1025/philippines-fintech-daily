@@ -82,9 +82,11 @@ def run_update(dry_run: bool = False):
             ex["fetched_date"] = ex.get("published", today_stamp)
     all_news = new_dicts + existing
 
+    # Remember today's new items for notification (before cutoff removes them)
+    todays_new_items = list(new_dicts)
+
     # Keep only last 90 days of news
     cutoff = (datetime.now().replace(day=1)).strftime("%Y-%m-%d")
-    # Actually keep 3 months of history
     from dateutil.relativedelta import relativedelta
     cutoff_date = datetime.now() - relativedelta(months=3)
     cutoff = cutoff_date.strftime("%Y-%m-%d")
@@ -123,11 +125,13 @@ def run_update(dry_run: bool = False):
     major_count = sum(1 for n in new_dicts if n.get("is_major"))
     logger.info(f"Major news items: {major_count}")
 
-    # 10. WeChat Work notification (only new items, translated)
-    translated_new = [n for n in all_news if n.get("fetched_date") == today_stamp]
-    if translated_new:
+    # 10. WeChat Work notification (use pre-cutoff new items list)
+    if todays_new_items:
+        from translator import translate_news_item as _tn
+        for ni in todays_new_items:
+            _tn(ni)
         from notifier import send_wechat_notification
-        send_wechat_notification(translated_new, today_stamp)
+        send_wechat_notification(todays_new_items, today_stamp)
     else:
         logger.info("No new items for WeChat notification.")
 

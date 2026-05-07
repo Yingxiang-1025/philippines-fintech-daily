@@ -18,7 +18,7 @@ WECHAT_WEBHOOK_URL = (
     "?key=dd8952d8-8721-40e1-a674-b80d65a229ca"
 )
 
-WEBSITE_URL = "https://yingxiang-1025.github.io/ph-fintech-daily/"
+WEBSITE_URL = "https://yingxiang-1025.github.io/philippines-fintech-daily/"
 
 SECTION_META = {
     "akulaku":        {"priority": 0, "label": "Akulaku",  "emoji": "🏦"},
