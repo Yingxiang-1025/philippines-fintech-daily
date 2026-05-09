@@ -87,7 +87,7 @@ def run_update(dry_run: bool = False):
     from dateutil.relativedelta import relativedelta
     cutoff_date = datetime.now() - relativedelta(months=3)
     cutoff = cutoff_date.strftime("%Y-%m-%d")
-    all_news = [n for n in all_news if n.get("published", "9999") >= cutoff]
+    all_news = [n for n in all_news if n.get("published", "9999") >= cutoff or n.get("fetched_date") == today_stamp]
 
     # 6. Apply translations to ALL items (including existing)
     from translator import translate_news_item
@@ -122,17 +122,21 @@ def run_update(dry_run: bool = False):
     major_count = sum(1 for n in new_dicts if n.get("is_major"))
     logger.info(f"Major news items: {major_count}")
 
-    # 10. WeChat Work notification — align with "昨日汇总" page
+    # 10. WeChat Work notification — align with "昨日汇总" page, fallback to fetched_date
     from datetime import timedelta as _td
     yesterday_str = (datetime.now() - _td(days=1)).strftime("%Y-%m-%d")
     yesterday_news = [n for n in all_news if n.get("published") == yesterday_str]
     today_news = [n for n in all_news if n.get("published") == today_stamp]
     push_items = yesterday_news + today_news
+    if not push_items:
+        push_items = [n for n in all_news if n.get("fetched_date") == today_stamp]
+        if push_items:
+            logger.info(f"No yesterday/today published news; falling back to {len(push_items)} newly fetched items")
     if push_items:
         from notifier import send_wechat_notification
         send_wechat_notification(push_items, today_stamp)
     else:
-        logger.info("No yesterday/today news for WeChat notification.")
+        logger.info("No news to push today.")
 
     logger.info("Update complete!")
 
