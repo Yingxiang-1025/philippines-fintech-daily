@@ -74,9 +74,13 @@ def run_update(dry_run: bool = False):
 
     # 5. Merge with existing — stamp fetched_date on new items
     today_stamp = datetime.now().strftime("%Y-%m-%d")
+    from datetime import timedelta as _td
+    date_floor = (datetime.now() - _td(days=30)).strftime("%Y-%m-%d")
     new_dicts = [item.to_dict() for item in processed]
     for nd in new_dicts:
         nd["fetched_date"] = today_stamp
+        if nd.get("published", "9999") < date_floor:
+            nd["published"] = today_stamp
     for ex in existing:
         if "fetched_date" not in ex:
             ex["fetched_date"] = ex.get("published", today_stamp)
