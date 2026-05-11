@@ -40,7 +40,7 @@ class NewsItem:
         self.url = url
         self.summary = summary
         self.source = source
-        self.published = published or datetime.now().strftime("%Y-%m-%d")
+        self.published = published
         self.sections = sections or []
         self.summary_zh = summary_zh
         self.is_major = is_major
@@ -79,7 +79,9 @@ def fetch_rss_feeds(max_age_days: int = 7) -> list[NewsItem]:
                 elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
                     pub_date = datetime(*entry.updated_parsed[:6])
 
-                if pub_date and pub_date < cutoff:
+                if not pub_date or pub_date.year < 2026:
+                    continue
+                if pub_date < cutoff:
                     continue
 
                 title = entry.get("title", "").strip()
@@ -157,11 +159,14 @@ def _search_serpapi(queries: list) -> list[NewsItem]:
                 pub_date = None
                 if "date" in result:
                     try:
-                        pub_date = date_parser.parse(result["date"]).strftime(
-                            "%Y-%m-%d"
-                        )
+                        parsed_dt = date_parser.parse(result["date"])
+                        if parsed_dt.year < 2026:
+                            continue
+                        pub_date = parsed_dt.strftime("%Y-%m-%d")
                     except (ValueError, TypeError):
-                        pass
+                        continue
+                else:
+                    continue
 
                 item = NewsItem(
                     title=result.get("title", ""),
@@ -202,9 +207,12 @@ def _search_google_news_rss(queries: list) -> list[NewsItem]:
 
                 pub_date = None
                 if hasattr(entry, "published_parsed") and entry.published_parsed:
-                    pub_date = datetime(*entry.published_parsed[:6]).strftime(
-                        "%Y-%m-%d"
-                    )
+                    parsed_dt = datetime(*entry.published_parsed[:6])
+                    if parsed_dt.year < 2026:
+                        continue
+                    pub_date = parsed_dt.strftime("%Y-%m-%d")
+                else:
+                    continue
 
                 raw_summary = entry.get("summary", "").strip()
                 if "<" in raw_summary:

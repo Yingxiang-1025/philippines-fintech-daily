@@ -212,18 +212,22 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
 
 def send_wechat_notification(new_items: list[dict], today_str: str) -> bool:
     if not new_items:
-        logger.info("No new items today — skipping WeChat push.")
-        return False
-
-    items = sorted(new_items, key=lambda n: _meta(_best_section(n))["priority"])
-    message = build_message(items, today_str)
-    if not message:
-        return False
-
-    while len(message.encode("utf-8")) > 3800 and len(items) > 3:
-        items = items[:-1]
+        message = (
+            f"📰 **菲律宾金融科技日报 | {today_str}**\n\n"
+            f"昨日无新增资讯更新。\n\n"
+            f"[🌐 查看完整日报]({WEBSITE_URL})"
+        )
+        logger.info("No yesterday news — sending 'no update' notification.")
+    else:
+        items = sorted(new_items, key=lambda n: _meta(_best_section(n))["priority"])
         message = build_message(items, today_str)
-    logger.info(f"Message length: {len(message)} chars, {len(message.encode('utf-8'))} bytes, items: {len(items)}")
+        if not message:
+            return False
+
+        while len(message.encode("utf-8")) > 3800 and len(items) > 3:
+            items = items[:-1]
+            message = build_message(items, today_str)
+        logger.info(f"Message length: {len(message)} chars, {len(message.encode('utf-8'))} bytes, items: {len(items)}")
 
     payload = {"msgtype": "markdown", "markdown": {"content": message}}
 

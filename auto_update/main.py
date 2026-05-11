@@ -64,34 +64,28 @@ def run_update(dry_run: bool = False):
     unique_new = deduplicate(all_new, existing)
     logger.info(f"After dedup: {len(unique_new)} new unique articles")
 
-    if not unique_new:
-        logger.info("No new articles found. Skipping update.")
-        return
-
     # 4. Process (assign sections, AI summary, mark major)
-    processed = process_news(unique_new)
-    logger.info(f"Processed {len(processed)} articles")
-
-    # 5. Merge with existing — stamp fetched_date on new items
     today_stamp = datetime.now().strftime("%Y-%m-%d")
-    from datetime import timedelta as _td
-    date_floor = (datetime.now() - _td(days=30)).strftime("%Y-%m-%d")
-    new_dicts = [item.to_dict() for item in processed]
-    for nd in new_dicts:
-        nd["fetched_date"] = today_stamp
-        if nd.get("published", "9999") < date_floor:
-            nd["published"] = today_stamp
+    new_dicts = []
+    if unique_new:
+        processed = process_news(unique_new)
+        logger.info(f"Processed {len(processed)} articles")
+        new_dicts = [item.to_dict() for item in processed]
+        for nd in new_dicts:
+            nd["fetched_date"] = today_stamp
+            if not nd.get("published"):
+                nd["published"] = today_stamp
+    else:
+        logger.info("No new articles found.")
+
+    # 5. Merge with existing
     for ex in existing:
         if "fetched_date" not in ex:
             ex["fetched_date"] = ex.get("published", today_stamp)
     all_news = new_dicts + existing
 
-    # Keep only last 90 days of news
-    cutoff = (datetime.now().replace(day=1)).strftime("%Y-%m-%d")
-    from dateutil.relativedelta import relativedelta
-    cutoff_date = datetime.now() - relativedelta(months=3)
-    cutoff = cutoff_date.strftime("%Y-%m-%d")
-    all_news = [n for n in all_news if n.get("published", "9999") >= cutoff or n.get("fetched_date") == today_stamp]
+    # Keep only 2026+ news
+    all_news = [n for n in all_news if n.get("published", "9999") >= "2026-01-01"]
 
     # 6. Apply translations to ALL items (including existing)
     from translator import translate_news_item
@@ -126,21 +120,12 @@ def run_update(dry_run: bool = False):
     major_count = sum(1 for n in new_dicts if n.get("is_major"))
     logger.info(f"Major news items: {major_count}")
 
-    # 10. WeChat Work notification — align with "昨日汇总" page, fallback to fetched_date
+    # 10. WeChat Work notification — push yesterday's published news
     from datetime import timedelta as _td
     yesterday_str = (datetime.now() - _td(days=1)).strftime("%Y-%m-%d")
-    yesterday_news = [n for n in all_news if n.get("published") == yesterday_str]
-    today_news = [n for n in all_news if n.get("published") == today_stamp]
-    push_items = yesterday_news + today_news
-    if not push_items:
-        push_items = [n for n in all_news if n.get("fetched_date") == today_stamp]
-        if push_items:
-            logger.info(f"No yesterday/today published news; falling back to {len(push_items)} newly fetched items")
-    if push_items:
-        from notifier import send_wechat_notification
-        send_wechat_notification(push_items, today_stamp)
-    else:
-        logger.info("No news to push today.")
+    push_items = [n for n in all_news if n.get("published") == yesterday_str]
+    from notifier import send_wechat_notification
+    send_wechat_notification(push_items, today_stamp)
 
     logger.info("Update complete!")
 
