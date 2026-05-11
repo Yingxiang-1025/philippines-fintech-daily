@@ -3,6 +3,7 @@ HTML page generator using Jinja2 templates.
 """
 import json
 import logging
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -19,6 +20,84 @@ from config import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_news_items(news_items: list[dict]) -> list[dict]:
+    """Validate and filter news items before page generation.
+
+    Checks:
+    1. published date must be valid YYYY-MM-DD format, >= 2026-01-01
+    2. If URL contains /YYYY/ where YYYY < 2026, reject item
+    3. If published == fetched_date and title/summary mentions pre-2026
+       year (not as a reference to data), flag as suspicious
+    4. Items without published date are removed
+    """
+    valid = []
+    removed_count = 0
+
+    for item in news_items:
+        pub = item.get("published", "")
+        url = item.get("url", "")
+        title = (item.get("title_zh") or item.get("title", ""))
+
+        # Check 1: published date format & range
+        if not pub or len(pub) != 10:
+            logger.warning(f"VALIDATION: removed (no/bad date): {title[:50]}")
+            removed_count += 1
+            continue
+
+        try:
+            pub_dt = datetime.strptime(pub, "%Y-%m-%d")
+            if pub_dt.year < 2026:
+                logger.warning(
+                    f"VALIDATION: removed (pre-2026 date {pub}): {title[:50]}"
+                )
+                removed_count += 1
+                continue
+        except ValueError:
+            logger.warning(f"VALIDATION: removed (invalid date {pub}): {title[:50]}")
+            removed_count += 1
+            continue
+
+        # Check 2: URL contains year path that contradicts published year
+        url_year_matches = re.findall(r"/(\d{4})/", url)
+        if url_year_matches:
+            url_year = int(url_year_matches[-1])
+            if url_year < 2026 and url_year != pub_dt.year:
+                # URL says 2024 but published says 2026 — suspicious
+                # But allow if URL year is close (e.g., review article)
+                if abs(pub_dt.year - url_year) > 1:
+                    logger.warning(
+                        f"VALIDATION: removed (URL year {url_year} vs pub {pub}): "
+                        f"{title[:50]}"
+                    )
+                    removed_count += 1
+                    continue
+
+        # Check 3: published == fetched and content mentions old years
+        fetch = item.get("fetched_date", "")
+        if pub == fetch:
+            summary = item.get("summary_zh") or item.get("summary", "")
+            combined = title + " " + summary
+            old_years_in_text = [
+                int(y) for y in re.findall(r"20[12]\d", combined) if int(y) < 2025
+            ]
+            if old_years_in_text:
+                # The text primarily discusses events from years before 2025
+                # but claims to be published today — mark as suspicious but keep
+                logger.info(
+                    f"VALIDATION: suspicious (text mentions {old_years_in_text}, "
+                    f"pub={pub}, fetch={fetch}): {title[:50]}"
+                )
+
+        valid.append(item)
+
+    if removed_count:
+        logger.warning(f"VALIDATION: removed {removed_count} invalid items")
+    else:
+        logger.info(f"VALIDATION: all {len(valid)} items passed date checks")
+
+    return valid
 
 
 def _get_env() -> Environment:
@@ -51,6 +130,8 @@ def _load_key_points() -> dict:
 
 def generate_all_pages(news_items: list[dict], vol_number: int = 1):
     """Generate/update all HTML pages from news data."""
+    news_items = _validate_news_items(news_items)
+
     env = _get_env()
     today = datetime.now()
     yesterday = today - timedelta(days=1)
