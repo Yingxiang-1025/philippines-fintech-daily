@@ -52,7 +52,7 @@
             <li style="padding:0.3rem 0; font-size:0.88rem; color:#78350f;">
                 <strong>{{ loop.index }}.</strong>
                 <span style="color:#9a8264; font-size:0.78rem;">[{{ item.published }}]</span>
-                {% if item.fetched_date == today_str %}<span style="display:inline-block;background:#dcfce7;color:#166534;font-size:0.7rem;padding:0.08rem 0.4rem;border-radius:3px;margin-right:0.2rem;font-weight:600;">新</span>{% endif %}
+                {% if item.is_new %}<span style="display:inline-block;background:#dcfce7;color:#166534;font-size:0.7rem;padding:0.08rem 0.4rem;border-radius:3px;margin-right:0.2rem;font-weight:600;">新</span>{% endif %}
                 <a href="{{ item.url }}" target="_blank" style="color:#78350f;">{{ item.title_zh or item.title }}</a>
             </li>
             {% endfor %}
@@ -66,13 +66,13 @@
             <div class="date-divider">{{ item.published }}</div>
         {% endif %}
 
-        <div class="card{% if item.fetched_date == today_str %} card-new{% endif %}">
+        <div class="card{% if item.is_new %} card-new{% endif %}">
             <div class="card-body">
                 {% for sec in item.sections %}
                 <span class="card-tag {{ section_tags.get(sec, 'tag-market') }}">{{ section_names.get(sec, sec) }}</span>
                 {% endfor %}
                 {% if item.is_major %}<span class="card-tag tag-breaking">重大</span>{% endif %}
-                {% if item.fetched_date == today_str %}<span class="card-tag tag-new">今日新增</span>{% endif %}
+                {% if item.is_new %}<span class="card-tag tag-new">今日新增</span>{% endif %}
                 <div class="card-title">
                     <a href="{{ item.url }}" target="_blank">{{ item.title_zh or item.title }}</a>
                 </div>

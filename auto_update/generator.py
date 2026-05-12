@@ -136,8 +136,15 @@ def generate_all_pages(news_items: list[dict], vol_number: int = 1):
     today = datetime.now()
     yesterday = today - timedelta(days=1)
 
+    today_str = today.strftime("%Y-%m-%d")
+    new_cutoff = (today - timedelta(days=3)).strftime("%Y-%m-%d")
+    for item in news_items:
+        fd = item.get("fetched_date", "")
+        pub = item.get("published", "")
+        item["is_new"] = (fd == today_str and pub >= new_cutoff)
+
     context = {
-        "today_str": today.strftime("%Y-%m-%d"),
+        "today_str": today_str,
         "today_day": today.strftime("%a"),
         "yesterday_str": yesterday.strftime("%Y-%m-%d"),
         "yesterday_day": yesterday.strftime("%a"),

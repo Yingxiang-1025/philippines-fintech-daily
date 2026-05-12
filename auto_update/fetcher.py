@@ -23,6 +23,30 @@ from config import (
 logger = logging.getLogger(__name__)
 
 
+def _resolve_google_news_url(gn_url: str) -> str:
+    """Resolve a Google News RSS redirect URL to the actual article URL.
+    Returns original URL on failure."""
+    if "news.google.com" not in gn_url:
+        return gn_url
+    try:
+        resp = requests.head(gn_url, allow_redirects=True, timeout=8,
+                             headers={"User-Agent": "Mozilla/5.0"})
+        final = resp.url
+        if final and "news.google.com" not in final:
+            return final
+    except Exception:
+        pass
+    return gn_url
+
+
+def _extract_date_from_url(url: str) -> str | None:
+    """Extract YYYY-MM-DD from a URL path like /2026/05/10/article."""
+    m = re.search(r"/(\d{4})/(\d{2})/(\d{2})/", url)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+    return None
+
+
 def _url_date_conflicts(url: str, pub_date_str: str) -> bool:
     """Return True if URL path contains a year that conflicts with published date.
     E.g., URL has /2022/ but pub_date says 2026 -> conflict.
@@ -122,13 +146,23 @@ def fetch_rss_feeds(max_age_days: int = 7) -> list[NewsItem]:
                 if not _is_relevant(title, summary):
                     continue
 
+                actual_link = _resolve_google_news_url(link)
+                url_date = _extract_date_from_url(actual_link)
                 pub_str = pub_date.strftime("%Y-%m-%d") if pub_date else None
-                if _url_date_conflicts(link, pub_str):
+                if url_date:
+                    url_year = int(url_date[:4])
+                    if url_year < 2026:
+                        logger.info(f"Skip old article (url_date={url_date}): {title[:50]}")
+                        continue
+                    if url_date != pub_str:
+                        pub_str = url_date
+
+                if _url_date_conflicts(actual_link, pub_str):
                     continue
 
                 item = NewsItem(
                     title=title,
-                    url=link,
+                    url=actual_link if actual_link != link else link,
                     summary=summary,
                     source=feed_config["name"],
                     published=pub_str,
@@ -232,10 +266,10 @@ def _search_google_news_rss(queries: list) -> list[NewsItem]:
             feed = feedparser.parse(rss_url)
 
             for entry in feed.entries[:5]:
-                url = entry.get("link", "")
-                if url in seen_urls:
+                gn_url = entry.get("link", "")
+                if gn_url in seen_urls:
                     continue
-                seen_urls.add(url)
+                seen_urls.add(gn_url)
 
                 pub_date = None
                 if hasattr(entry, "published_parsed") and entry.published_parsed:
@@ -246,18 +280,27 @@ def _search_google_news_rss(queries: list) -> list[NewsItem]:
                 else:
                     continue
 
+                actual_url = _resolve_google_news_url(gn_url)
+                url_date = _extract_date_from_url(actual_url)
+                if url_date and url_date != pub_date:
+                    url_year = int(url_date[:4])
+                    if url_year < 2026:
+                        logger.info(f"Skip old article (url_date={url_date}): {entry.get('title','')[:50]}")
+                        continue
+                    pub_date = url_date
+
                 raw_summary = entry.get("summary", "").strip()
                 if "<" in raw_summary:
                     from bs4 import BeautifulSoup
                     raw_summary = BeautifulSoup(raw_summary, "html.parser").get_text()
                 raw_summary = raw_summary[:500]
 
-                if _url_date_conflicts(url, pub_date):
+                if _url_date_conflicts(actual_url, pub_date):
                     continue
 
                 item = NewsItem(
                     title=entry.get("title", "").strip(),
-                    url=url,
+                    url=actual_url if actual_url != gn_url else gn_url,
                     summary=raw_summary,
                     source=entry.get("source", {}).get("title", "Google News"),
                     published=pub_date,
