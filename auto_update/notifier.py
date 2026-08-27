@@ -286,9 +286,9 @@ def send_wechat_notification(new_items: list[dict], today_str: str) -> bool:
         resp = requests.post(WECHAT_WEBHOOK_URL, json=payload, timeout=10)
         result = resp.json()
         if result.get("errcode") == 0:
-            if unpushed:
-                _record_pushed(unpushed, today_str)
-            logger.info(f"WeChat push OK: {len(unpushed)} items sent")
+            if items:
+                _record_pushed(items, today_str)
+            logger.info(f"WeChat push OK: {len(items) if unpushed else 0} items sent")
             return True
         logger.warning(f"WeChat webhook error: {result.get('errmsg', '?')}")
         return False

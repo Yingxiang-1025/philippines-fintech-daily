@@ -39,6 +39,13 @@ logger = logging.getLogger("main")
 
 def run_update(dry_run: bool = False):
     """Execute one full update cycle."""
+    try:
+        _run_update_inner(dry_run)
+    except Exception as e:
+        logger.error(f"Update failed with error: {e}", exc_info=True)
+
+
+def _run_update_inner(dry_run: bool = False):
     logger.info("=" * 60)
     logger.info(f"Starting daily update: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     logger.info("=" * 60)
@@ -87,7 +94,21 @@ def run_update(dry_run: bool = False):
     # Keep only 2026+ news
     all_news = [n for n in all_news if n.get("published", "9999") >= "2026-01-01"]
 
-    # 6. Apply translations to items that need it
+    # 6. Deduplicate corpus by URL
+    seen_urls = set()
+    deduped = []
+    for n in all_news:
+        url = n.get("url", "")
+        if url and url in seen_urls:
+            continue
+        if url:
+            seen_urls.add(url)
+        deduped.append(n)
+    if len(deduped) < len(all_news):
+        logger.info(f"Corpus dedup: removed {len(all_news) - len(deduped)} duplicates")
+        all_news = deduped
+
+    # 7. Apply translations to items that need it
     from translator import translate_news_item, _has_chinese, _title_body
     needs_translation = []
     for n in all_news:
