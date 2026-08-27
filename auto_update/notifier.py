@@ -7,11 +7,57 @@ Format:
   Footer — 查看完整日报链接
 Priority: Akulaku > 监管 > Others
 """
+import json
 import re
 import logging
+from pathlib import Path
+
 import requests
 
 logger = logging.getLogger(__name__)
+
+_PUSH_HISTORY_FILE = Path(__file__).parent / "data" / "pushed_history.json"
+
+
+def _load_push_history() -> dict:
+    if _PUSH_HISTORY_FILE.exists():
+        try:
+            with open(_PUSH_HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+
+def _save_push_history(history: dict):
+    _PUSH_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(_PUSH_HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
+
+def _filter_unpushed(items: list[dict]) -> list[dict]:
+    history = _load_push_history()
+    unpushed = []
+    for item in items:
+        key = item.get("url") or item.get("title", "")
+        if key and key not in history:
+            unpushed.append(item)
+    skipped = len(items) - len(unpushed)
+    if skipped:
+        logger.info(f"Push dedup: {skipped} already pushed, {len(unpushed)} new")
+    return unpushed
+
+
+def _record_pushed(items: list[dict], push_date: str):
+    history = _load_push_history()
+    for item in items:
+        key = item.get("url") or item.get("title", "")
+        if key:
+            history[key] = push_date
+    if len(history) > 500:
+        sorted_items = sorted(history.items(), key=lambda x: x[1], reverse=True)
+        history = dict(sorted_items[:500])
+    _save_push_history(history)
 
 WECHAT_WEBHOOK_URL = (
     "https://qyapi.weixin.qq.com/cgi-bin/webhook/send"
@@ -211,15 +257,20 @@ def build_message(new_items: list[dict], today_str: str) -> str | None:
 
 
 def send_wechat_notification(new_items: list[dict], today_str: str) -> bool:
-    if not new_items:
+    unpushed = _filter_unpushed(new_items) if new_items else []
+
+    if not unpushed:
         message = (
             f"📰 **菲律宾金融科技日报 | {today_str}**\n\n"
             f"昨日无新增资讯更新。\n\n"
             f"[🌐 查看完整日报]({WEBSITE_URL})"
         )
-        logger.info("No yesterday news — sending 'no update' notification.")
+        logger.info("No unpushed yesterday news — sending 'no update' notification.")
     else:
-        items = sorted(new_items, key=lambda n: _meta(_best_section(n))["priority"])
+        items = sorted(unpushed, key=lambda n: _meta(_best_section(n))["priority"])
+        if len(items) > 8:
+            logger.info(f"Push cap: trimming {len(items)} items to 8")
+            items = items[:8]
         message = build_message(items, today_str)
         if not message:
             return False
@@ -235,7 +286,9 @@ def send_wechat_notification(new_items: list[dict], today_str: str) -> bool:
         resp = requests.post(WECHAT_WEBHOOK_URL, json=payload, timeout=10)
         result = resp.json()
         if result.get("errcode") == 0:
-            logger.info(f"WeChat push OK: {len(new_items)} items sent")
+            if unpushed:
+                _record_pushed(unpushed, today_str)
+            logger.info(f"WeChat push OK: {len(unpushed)} items sent")
             return True
         logger.warning(f"WeChat webhook error: {result.get('errmsg', '?')}")
         return False

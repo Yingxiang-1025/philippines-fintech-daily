@@ -87,13 +87,23 @@ def run_update(dry_run: bool = False):
     # Keep only 2026+ news
     all_news = [n for n in all_news if n.get("published", "9999") >= "2026-01-01"]
 
-    # 6. Apply translations to ALL items (including existing)
-    from translator import translate_news_item
-    logger.info(f"Translating {len(all_news)} items to Chinese...")
-    for i, n in enumerate(all_news):
+    # 6. Apply translations to items that need it
+    from translator import translate_news_item, _has_chinese, _title_body
+    needs_translation = []
+    for n in all_news:
+        title_zh = n.get("title_zh", "")
+        summary_zh = n.get("summary_zh", "")
+        body = _title_body(title_zh)
+        if (not _has_chinese(body) or not _has_chinese(summary_zh)):
+            needs_translation.append(n)
+    logger.info(f"Translating {len(needs_translation)}/{len(all_news)} items to Chinese...")
+    for i, n in enumerate(needs_translation):
         translate_news_item(n)
         if (i + 1) % 10 == 0:
-            logger.info(f"  translated {i + 1}/{len(all_news)}")
+            logger.info(f"  translated {i + 1}/{len(needs_translation)}")
+        if (i + 1) % 50 == 0:
+            import time as _time
+            _time.sleep(2)
     logger.info("Translation complete.")
 
     # 7. Save
